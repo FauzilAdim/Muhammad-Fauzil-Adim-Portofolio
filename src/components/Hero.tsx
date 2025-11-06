@@ -69,45 +69,45 @@ const Hero: Component = () => {
           <div class="text-center">
             <div>
               {/* Main Title */}
-              <h1 class="text-5xl md:text-7xl lg:text-8xl font-medium text-white mb-8 animate-fadeIn mt-16">
+              <h1 class="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-medium text-white mb-8 animate-fadeIn mt-8 sm:mt-16 px-4">
                 <span class="text-black">
-                  Hello, I'm Muhammad Fauzil Adim
+                  Hello, I'm <br class="sm:hidden" />Muhammad Fauzil Adim
                 </span>
               </h1>
 
               {/* Animated Typing Text */}
-              <h2 class="text-2xl md:text-4xl font-semibold text-black mb-8 animate-slideUp min-h-[3rem] flex items-center justify-center">
+              <h2 class="text-xl sm:text-2xl md:text-4xl font-semibold text-black mb-6 sm:mb-8 animate-slideUp min-h-[2.5rem] sm:min-h-[3rem] flex items-center justify-center px-4">
                 <span>{displayText()}</span>
-                <span class="inline-block w-1 h-8 md:h-12 bg-black ml-1 animate-pulse"></span>
+                <span class="inline-block w-0.5 sm:w-1 h-6 sm:h-8 md:h-12 bg-black ml-1 animate-pulse"></span>
               </h2>
 
               {/* Description */}
-              <p class="text-black text-lg md:text-xl max-w-4xl mx-auto mb-12 animate-slideUp leading-relaxed">
+              <p class="text-black text-sm sm:text-lg md:text-xl max-w-4xl mx-auto mb-8 sm:mb-12 animate-slideUp leading-relaxed px-4">
                 Passionate about creating innovative digital solutions with modern technologies. Specialized in building scalable web applications, mobile apps, and user-centered designs that make a real impact.
               </p>
             </div>
 
             {/* CTA Buttons */}
-            <div class="flex flex-col sm:flex-row gap-4 justify-center mb-16 animate-slideUp">
+            <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mb-12 sm:mb-16 animate-slideUp px-4">
               <a 
                 href="#services" 
-                class="bg-black hover:bg-gray-800 text-white px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 glow-border hover:scale-105 shadow-lg inline-block"
+                class="bg-black hover:bg-gray-800 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full text-base sm:text-lg font-semibold transition-all duration-300 glow-border hover:scale-105 shadow-lg inline-block text-center"
               >
                 View Portfolio 
               </a>
               <a 
                 href="/CV.pdf" 
                 download="Muhammad_Fauzil_Adim_CV.pdf"
-                class="text-black px-8 py-4 text-lg font-semibold transition-all duration-300 hover:text-gray-600 inline-block"
+                class="text-black px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold transition-all duration-300 hover:text-gray-600 inline-block text-center"
               >
                 Download CV →
               </a>
             </div>
 
             {/* Scroll Indicator */}
-            <div class="mt-20 animate-bounce pb-10">
-              <p class="text-gray-600 text-sm mb-2">Discover More</p>
-              <div class="w-6 h-6 mx-auto">
+            <div class="mt-12 sm:mt-20 animate-bounce pb-6 sm:pb-10">
+              <p class="text-gray-600 text-xs sm:text-sm mb-2">Discover More</p>
+              <div class="w-5 h-5 sm:w-6 sm:h-6 mx-auto">
                 <svg class="w-full h-full text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
                 </svg>
