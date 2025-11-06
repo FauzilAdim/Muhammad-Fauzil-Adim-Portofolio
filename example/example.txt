@@ -1,0 +1,15 @@
+project-example/
+├── node_modules/           # Dependencies yang diinstall
+├── public/                 # Static assets
+├── src/                   # Source code utama
+│   ├── assets/            # File statis (gambar, font, dll)
+│   ├── components/        # Komponen yang dapat digunakan kembali
+│   ├── services/          # Services dan API calls
+│   ├── App.tsx           # Komponen utama aplikasi
+│   └── index.tsx         # Entry point aplikasi
+├── package.json          # Konfigurasi proyek dan dependencies
+├── package-lock.json     # Lock file untuk dependencies
+├── tsconfig.json         # Konfigurasi TypeScript
+├── tsconfig.node.json    # Konfigurasi TypeScript untuk Node
+├── vite.config.ts        # Konfigurasi Vite (build tool)
+└── pnpm-lock.yaml       # Lock file untuk pnpm package manager

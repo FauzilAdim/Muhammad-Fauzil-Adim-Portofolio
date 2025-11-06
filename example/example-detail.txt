@@ -1,0 +1,808 @@
+Penjelasan Detail Setiap File
+1. package.json
+File ini adalah jantung dari proyek Node.js/JavaScript yang berisi metadata proyek dan dependencies.
+
+json
+{
+  "name": "solid-example",
+  "version": "0.0.0",
+  "description": "A Solid JS project",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",           // Menjalankan development server
+    "build": "vite build",   // Build untuk production
+    "serve": "vite preview", // Preview build production
+    "start": "vite"          // Alias untuk dev
+  },
+  "dependencies": {
+    "solid-js": "^1.8.0"     // Framework utama Solid JS
+  },
+  "devDependencies": {
+    "vite": "^4.4.5",          // Build tool modern
+    "vite-plugin-solid": "^2.7.0", // Plugin Vite untuk Solid
+    "typescript": "^5.0.0"      // TypeScript compiler
+  }
+}
+Penjelasan Code:
+
+name: Nama proyek
+
+version: Versi proyek menggunakan semantic versioning
+
+type: "module": Menggunakan ES modules (import/export)
+
+scripts: Command yang bisa dijalankan dengan npm run atau pnpm run
+
+dependencies: Library yang dibutuhkan saat runtime
+
+devDependencies: Library yang hanya dibutuhkan saat development
+
+2. tsconfig.json
+File konfigurasi TypeScript yang mengatur bagaimana TypeScript compiler bekerja.
+
+json
+{
+  "compilerOptions": {
+    "strict": true,                    // Aktifkan semua strict type checking
+    "target": "ESNext",               // Target JavaScript version
+    "lib": ["DOM", "DOM.Iterable", "ES6"], // Library yang tersedia
+    "allowJs": false,                 // Tidak mengizinkan file .js
+    "skipLibCheck": true,             // Skip type checking library files
+    "esModuleInterop": false,         // Tidak menggunakan interop
+    "allowSyntheticDefaultImports": true, // Izinkan default imports
+    "forceConsistentCasingInFileNames": true, // Case sensitive file names
+    "module": "ESNext",               // Module system
+    "moduleResolution": "node",       // Resolusi module ala Node.js
+    "resolveJsonModule": true,        // Izinkan import JSON
+    "isolatedModules": true,          // Setiap file sebagai module terpisah
+    "noEmit": true,                   // Tidak generate JS files
+    "declaration": false,             // Tidak generate .d.ts files
+    "jsx": "preserve",                // Preserve JSX untuk Solid
+    "jsxImportSource": "solid-js"     // JSX import source untuk Solid
+  },
+  "include": ["src"],                 // Include folder src
+  "references": [{ "path": "./tsconfig.node.json" }]
+}
+Penjelasan Code:
+
+strict: Mengaktifkan semua pemeriksaan TypeScript yang ketat
+
+jsx: "preserve": JSX tidak ditransform, diserahkan ke bundler
+
+jsxImportSource: Menentukan library untuk JSX (Solid JS)
+
+include: Folder yang akan diproses TypeScript
+
+3. vite.config.ts
+File konfigurasi Vite sebagai build tool dan development server.
+
+typescript
+import { defineConfig } from 'vite';
+import solid from 'vite-plugin-solid';
+
+export default defineConfig({
+  plugins: [solid()],              // Plugin untuk mendukung Solid JS
+  server: {
+    port: 3000,                   // Port development server
+    open: true                    // Buka browser otomatis
+  },
+  build: {
+    target: 'esnext',            // Target build untuk browser modern
+    polyfillDynamicImport: false, // Tidak perlu polyfill dynamic import
+    outDir: 'dist',              // Folder output build
+    sourcemap: true              // Generate source maps
+  },
+  resolve: {
+    alias: {
+      '@': '/src'                // Alias @ untuk folder src
+    }
+  }
+});
+Penjelasan Code:
+
+plugins: [solid()]: Menggunakan plugin Solid untuk Vite
+
+server: Konfigurasi development server
+
+build: Konfigurasi untuk production build
+
+resolve.alias: Membuat shortcut path dengan @
+
+4. src/index.tsx - Entry Point
+File ini adalah titik masuk aplikasi Solid JS.
+
+typescript
+import { render } from 'solid-js/web';
+import './index.css';          // Import global styles
+import App from './App';       // Import komponen utama
+
+// Render aplikasi ke DOM
+render(() => <App />, document.getElementById('root')!);
+Penjelasan Code:
+
+render: Function dari Solid untuk merender komponen ke DOM
+
+() => <App />: Arrow function yang mengembalikan JSX
+
+document.getElementById('root')!: Element HTML tempat app di-mount
+
+!: TypeScript non-null assertion operator
+
+5. src/App.tsx - Komponen Utama
+Komponen root aplikasi yang mengatur struktur utama.
+
+typescript
+import { Component, createSignal, onMount } from 'solid-js';
+import { Router, Routes, Route } from '@solidjs/router';
+import Header from './components/Header';
+import Home from './components/Home';
+import About from './components/About';
+import './App.css';
+
+const App: Component = () => {
+  // State reaktif untuk theme
+  const [theme, setTheme] = createSignal<'light' | 'dark'>('light');
+  
+  // Lifecycle - dijalankan setelah component mount
+  onMount(() => {
+    console.log('App component mounted');
+    
+    // Cek preferensi theme dari localStorage
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      setTheme(savedTheme as 'light' | 'dark');
+    }
+  });
+
+  // Function untuk toggle theme
+  const toggleTheme = () => {
+    const newTheme = theme() === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+  };
+
+  return (
+    <Router>
+      <div class={`app ${theme()}`} data-theme={theme()}>
+        <Header 
+          theme={theme()} 
+          onThemeToggle={toggleTheme} 
+        />
+        
+        <main class="main-content">
+          <Routes>
+            <Route path="/" component={Home} />
+            <Route path="/about" component={About} />
+            <Route path="*" element={<div>Page Not Found</div>} />
+          </Routes>
+        </main>
+      </div>
+    </Router>
+  );
+};
+
+export default App;
+Penjelasan Code:
+
+Component: Type untuk komponen Solid JS
+
+createSignal: Membuat state reaktif (getter + setter)
+
+onMount: Lifecycle hook yang dijalankan setelah component mount
+
+Router/Routes/Route: Komponen untuk routing
+
+class={app ${theme()}}: Dynamic CSS class berdasarkan state
+
+theme(): Pemanggilan getter dari signal
+
+6. src/components/Header.tsx
+Komponen header yang menerima props.
+
+typescript
+import { Component, Show } from 'solid-js';
+
+// Interface untuk props
+interface HeaderProps {
+  theme: 'light' | 'dark';
+  onThemeToggle: () => void;
+}
+
+const Header: Component<HeaderProps> = (props) => {
+  return (
+    <header class="header">
+      <nav class="nav">
+        <div class="nav-brand">
+          <h1>My Solid App</h1>
+        </div>
+        
+        <ul class="nav-links">
+          <li><a href="/">Home</a></li>
+          <li><a href="/about">About</a></li>
+        </ul>
+        
+        {/* Conditional rendering menggunakan Show */}
+        <Show when={true}>
+          <button 
+            class="theme-toggle"
+            onClick={props.onThemeToggle}
+            aria-label="Toggle theme"
+          >
+            <Show 
+              when={props.theme === 'light'} 
+              fallback={<span>☀️</span>}
+            >
+              <span>🌙</span>
+            </Show>
+          </button>
+        </Show>
+      </nav>
+    </header>
+  );
+};
+
+export default Header;
+Penjelasan Code:
+
+interface HeaderProps: Mendefinisikan tipe props yang diterima
+
+Component<HeaderProps>: Generic type untuk komponen dengan props
+
+props.onThemeToggle: Mengakses function dari parent component
+
+Show when={condition}: Conditional rendering di Solid
+
+fallback: Alternatif jika kondisi when false
+
+7. src/components/Home.tsx
+Komponen halaman utama dengan contoh penggunaan signals dan effects.
+
+typescript
+import { Component, createSignal, createEffect, For } from 'solid-js';
+
+interface Todo {
+  id: number;
+  text: string;
+  completed: boolean;
+}
+
+const Home: Component = () => {
+  // Signals untuk state management
+  const [todos, setTodos] = createSignal<Todo[]>([]);
+  const [inputValue, setInputValue] = createSignal('');
+  const [filter, setFilter] = createSignal<'all' | 'active' | 'completed'>('all');
+
+  // Computed value (derived state)
+  const filteredTodos = () => {
+    const currentTodos = todos();
+    const currentFilter = filter();
+    
+    switch (currentFilter) {
+      case 'active':
+        return currentTodos.filter(todo => !todo.completed);
+      case 'completed':
+        return currentTodos.filter(todo => todo.completed);
+      default:
+        return currentTodos;
+    }
+  };
+
+  // Effect untuk menyimpan todos ke localStorage
+  createEffect(() => {
+    const currentTodos = todos();
+    localStorage.setItem('todos', JSON.stringify(currentTodos));
+    console.log('Todos saved to localStorage:', currentTodos);
+  });
+
+  // Function untuk menambah todo
+  const addTodo = () => {
+    const text = inputValue().trim();
+    if (!text) return;
+
+    const newTodo: Todo = {
+      id: Date.now(),
+      text,
+      completed: false
+    };
+
+    setTodos(prev => [...prev, newTodo]);
+    setInputValue('');
+  };
+
+  // Function untuk toggle completed status
+  const toggleTodo = (id: number) => {
+    setTodos(prev => prev.map(todo => 
+      todo.id === id 
+        ? { ...todo, completed: !todo.completed }
+        : todo
+    ));
+  };
+
+  // Function untuk hapus todo
+  const deleteTodo = (id: number) => {
+    setTodos(prev => prev.filter(todo => todo.id !== id));
+  };
+
+  // Handle form submit
+  const handleSubmit = (e: Event) => {
+    e.preventDefault();
+    addTodo();
+  };
+
+  return (
+    <div class="home">
+      <h2>Todo List</h2>
+      
+      {/* Form untuk menambah todo */}
+      <form onSubmit={handleSubmit} class="todo-form">
+        <input
+          type="text"
+          value={inputValue()}
+          onInput={(e) => setInputValue(e.currentTarget.value)}
+          placeholder="Add a new todo..."
+          class="todo-input"
+        />
+        <button type="submit" class="add-button">
+          Add Todo
+        </button>
+      </form>
+
+      {/* Filter buttons */}
+      <div class="filter-buttons">
+        <button 
+          class={filter() === 'all' ? 'active' : ''}
+          onClick={() => setFilter('all')}
+        >
+          All
+        </button>
+        <button 
+          class={filter() === 'active' ? 'active' : ''}
+          onClick={() => setFilter('active')}
+        >
+          Active
+        </button>
+        <button 
+          class={filter() === 'completed' ? 'active' : ''}
+          onClick={() => setFilter('completed')}
+        >
+          Completed
+        </button>
+      </div>
+
+      {/* Todo list menggunakan For */}
+      <div class="todo-list">
+        <For 
+          each={filteredTodos()} 
+          fallback={<p>No todos found</p>}
+        >
+          {(todo) => (
+            <div class={`todo-item ${todo.completed ? 'completed' : ''}`}>
+              <input
+                type="checkbox"
+                checked={todo.completed}
+                onChange={() => toggleTodo(todo.id)}
+                class="todo-checkbox"
+              />
+              <span class="todo-text">{todo.text}</span>
+              <button 
+                onClick={() => deleteTodo(todo.id)}
+                class="delete-button"
+              >
+                Delete
+              </button>
+            </div>
+          )}
+        </For>
+      </div>
+
+      {/* Statistics */}
+      <div class="todo-stats">
+        <p>
+          Total: {todos().length}, 
+          Active: {todos().filter(t => !t.completed).length}, 
+          Completed: {todos().filter(t => t.completed).length}
+        </p>
+      </div>
+    </div>
+  );
+};
+
+export default Home;
+Penjelasan Code:
+
+createSignal<Todo[]>([]): Signal dengan tipe array Todo dan nilai awal kosong
+
+filteredTodos(): Computed value yang otomatis update saat dependencies berubah
+
+createEffect(): Side effect yang dijalankan saat dependencies berubah
+
+For each={data()}: Loop rendering untuk array data
+
+fallback: Tampilan alternatif jika array kosong
+
+onInput={(e) => ...}: Event handler untuk input change
+
+e.currentTarget.value: Mengambil nilai dari input element
+
+8. src/components/About.tsx
+Komponen halaman About dengan contoh penggunaan resources dan data fetching.
+
+typescript
+import { Component, createResource, Suspense, ErrorBoundary, Show } from 'solid-js';
+
+// Interface untuk data user
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  website: string;
+}
+
+// Function untuk fetch data
+const fetchUsers = async (): Promise<User[]> => {
+  const response = await fetch('https://jsonplaceholder.typicode.com/users');
+  if (!response.ok) {
+    throw new Error('Failed to fetch users');
+  }
+  return response.json();
+};
+
+const About: Component = () => {
+  // Resource untuk data fetching dengan loading dan error states
+  const [users, { refetch, mutate }] = createResource<User[]>(fetchUsers);
+
+  // Function untuk refresh data
+  const handleRefresh = () => {
+    refetch();
+  };
+
+  return (
+    <div class="about">
+      <h2>About Page</h2>
+      <p>This page demonstrates resource loading and error handling in Solid JS.</p>
+
+      <div class="users-section">
+        <div class="section-header">
+          <h3>Users from API</h3>
+          <button onClick={handleRefresh} class="refresh-button">
+            Refresh Data
+          </button>
+        </div>
+
+        {/* Error Boundary untuk menangani error */}
+        <ErrorBoundary fallback={(err) => (
+          <div class="error-message">
+            <h4>Something went wrong:</h4>
+            <p>{err.message}</p>
+            <button onClick={handleRefresh}>Try Again</button>
+          </div>
+        )}>
+          {/* Suspense untuk loading state */}
+          <Suspense fallback={<div class="loading">Loading users...</div>}>
+            <Show 
+              when={users()} 
+              fallback={<div>No users found</div>}
+            >
+              <div class="users-grid">
+                <For each={users()}>
+                  {(user) => (
+                    <div class="user-card">
+                      <h4>{user.name}</h4>
+                      <p><strong>Email:</strong> {user.email}</p>
+                      <p><strong>Phone:</strong> {user.phone}</p>
+                      <p><strong>Website:</strong> {user.website}</p>
+                    </div>
+                  )}
+                </For>
+              </div>
+            </Show>
+          </Suspense>
+        </ErrorBoundary>
+      </div>
+    </div>
+  );
+};
+
+export default About;
+Penjelasan Code:
+
+createResource<User[]>(fetchUsers): Membuat resource untuk async data fetching
+
+[users, { refetch, mutate }]: Destructuring resource dengan actions
+
+ErrorBoundary: Menangkap dan menampilkan error
+
+Suspense: Menampilkan loading state saat data loading
+
+Show when={users()}: Conditional rendering berdasarkan data availability
+
+refetch(): Function untuk refresh data dari server
+
+9. src/services/DataService.ts
+Service untuk mengelola API calls dan business logic.
+
+typescript
+// Base configuration untuk API
+const API_BASE_URL = 'https://jsonplaceholder.typicode.com';
+
+// Generic HTTP client
+class HttpClient {
+  private baseURL: string;
+
+  constructor(baseURL: string) {
+    this.baseURL = baseURL;
+  }
+
+  // Generic GET request
+  async get<T>(endpoint: string): Promise<T> {
+    try {
+      const response = await fetch(`${this.baseURL}${endpoint}`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('GET request failed:', error);
+      throw error;
+    }
+  }
+
+  // Generic POST request
+  async post<T, U>(endpoint: string, data: U): Promise<T> {
+    try {
+      const response = await fetch(`${this.baseURL}${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('POST request failed:', error);
+      throw error;
+    }
+  }
+
+  // Generic PUT request
+  async put<T, U>(endpoint: string, data: U): Promise<T> {
+    try {
+      const response = await fetch(`${this.baseURL}${endpoint}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('PUT request failed:', error);
+      throw error;
+    }
+  }
+
+  // DELETE request
+  async delete(endpoint: string): Promise<void> {
+    try {
+      const response = await fetch(`${this.baseURL}${endpoint}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
+      }
+    } catch (error) {
+      console.error('DELETE request failed:', error);
+      throw error;
+    }
+  }
+}
+
+// Create HTTP client instance
+const httpClient = new HttpClient(API_BASE_URL);
+
+// Specific service untuk Users
+export class UserService {
+  static async getAllUsers() {
+    return httpClient.get<User[]>('/users');
+  }
+
+  static async getUserById(id: number) {
+    return httpClient.get<User>(`/users/${id}`);
+  }
+
+  static async createUser(userData: Omit<User, 'id'>) {
+    return httpClient.post<User, Omit<User, 'id'>>('/users', userData);
+  }
+
+  static async updateUser(id: number, userData: Partial<User>) {
+    return httpClient.put<User, Partial<User>>(`/users/${id}`, userData);
+  }
+
+  static async deleteUser(id: number) {
+    return httpClient.delete(`/users/${id}`);
+  }
+}
+
+// Local Storage utilities
+export class StorageService {
+  static setItem<T>(key: string, value: T): void {
+    try {
+      const serializedValue = JSON.stringify(value);
+      localStorage.setItem(key, serializedValue);
+    } catch (error) {
+      console.error('Error saving to localStorage:', error);
+    }
+  }
+
+  static getItem<T>(key: string): T | null {
+    try {
+      const item = localStorage.getItem(key);
+      if (item === null) return null;
+      return JSON.parse(item);
+    } catch (error) {
+      console.error('Error reading from localStorage:', error);
+      return null;
+    }
+  }
+
+  static removeItem(key: string): void {
+    try {
+      localStorage.removeItem(key);
+    } catch (error) {
+      console.error('Error removing from localStorage:', error);
+    }
+  }
+
+  static clear(): void {
+    try {
+      localStorage.clear();
+    } catch (error) {
+      console.error('Error clearing localStorage:', error);
+    }
+  }
+}
+
+// Export types
+export interface User {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  website: string;
+}
+Penjelasan Code:
+
+class HttpClient: Generic HTTP client untuk API calls
+
+async get<T>(): Generic method dengan TypeScript generics
+
+Promise<T>: Return type untuk async functions
+
+Omit<User, 'id'>: Utility type yang menghilangkan property 'id'
+
+Partial<User>: Utility type yang membuat semua property optional
+
+static methods: Method yang bisa dipanggil tanpa instantiate class
+
+JSON.stringify(): Convert object ke string untuk localStorage
+
+JSON.parse(): Convert string kembali ke object
+
+10. File CSS dan Assets
+src/index.css - Global styles:
+
+css
+/* Reset dan base styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  line-height: 1.5;
+  color: var(--text-color);
+  background-color: var(--bg-color);
+  transition: color 0.3s ease, background-color 0.3s ease;
+}
+
+/* CSS Variables untuk theming */
+:root {
+  --primary-color: #3b82f6;
+  --secondary-color: #64748b;
+  --success-color: #10b981;
+  --error-color: #ef4444;
+  --warning-color: #f59e0b;
+}
+
+/* Light theme */
+.app[data-theme="light"] {
+  --bg-color: #ffffff;
+  --text-color: #1f2937;
+  --border-color: #e5e7eb;
+  --card-bg: #f9fafb;
+}
+
+/* Dark theme */
+.app[data-theme="dark"] {
+  --bg-color: #1f2937;
+  --text-color: #f9fafb;
+  --border-color: #374151;
+  --card-bg: #374151;
+}
+
+/* Loading animation */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.loading::after {
+  content: '';
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--primary-color);
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+Konsep Penting dalam Solid JS
+Reactivity System
+Solid JS menggunakan fine-grained reactivity dengan signals:
+
+Signals: State yang reaktif dengan getter/setter
+
+Effects: Side effects yang otomatis update
+
+Memos: Computed values yang di-cache
+
+Resources: Untuk async data dengan loading states
+
+JSX dan Komponen
+Komponen adalah functions yang return JSX
+
+Props dipass sebagai object parameter
+
+Event handlers menggunakan camelCase
+
+Class attributes menggunakan class bukan className
+
+Control Flow
+Show: Conditional rendering
+
+For: Loop rendering dengan optimisasi
+
+Switch/Match: Multiple conditions
+
+Suspense: Loading states untuk async operations
+
+Performance
+Tidak ada virtual DOM, compile ke real DOM operations
+
+Fine-grained updates hanya pada bagian yang berubah
+
+Reactive primitives yang sangat efisien
+
+File-file ini bekerja sama membentuk aplikasi Solid JS yang modern, reaktif, dan performant dengan TypeScript support penuh!

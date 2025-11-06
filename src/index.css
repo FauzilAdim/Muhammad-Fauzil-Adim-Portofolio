@@ -1,0 +1,128 @@
+/* Tambahkan import Google Fonts di paling atas */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+* {
+  font-family: 'Poppins', sans-serif; /* Ganti 'medium' dengan 'sans-serif' */
+}
+
+/* Typing Animation */
+.typewriter {
+  position: relative;
+  border-right: 2px solid black;
+  white-space: nowrap;
+  overflow: hidden;
+  margin: 0 auto;
+  animation: 
+    typing 4s steps(20, end),
+    blink-caret .75s step-end infinite,
+    deleteText 4s steps(20, end) 8s,
+    typing2 3s steps(15, end) 12s,
+    blink-caret .75s step-end infinite,
+    deleteText2 3s steps(15, end) 19s;
+  animation-fill-mode: forwards;
+  animation-iteration-count: infinite;
+}
+
+@keyframes typing {
+  0% { width: 0 }
+  100% { width: 320px; content: "Innovative IT Solutions" }
+}
+
+@keyframes deleteText {
+  0% { width: 320px }
+  100% { width: 0 }
+}
+
+@keyframes typing2 {
+  0% { width: 0; content: "Junior Developer" }
+  100% { width: 240px; content: "Junior Developer" }
+}
+
+@keyframes deleteText2 {
+  0% { width: 240px }
+  100% { width: 0 }
+}
+
+@keyframes blink-caret {
+  from, to { border-color: transparent }
+  50% { border-color: black }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: white; /* Ganti gradient dengan white jika mau background putih */
+  overflow-x: hidden;
+}
+
+.cosmic-bg {
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.1) 0%, transparent 50%);
+}
+
+.glass-effect {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glow-border {
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+}
+
+.table-row-hover:hover {
+  background: rgba(59, 130, 246, 0.1);
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
+}
+
+/* Animation utilities */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 1s ease-out;
+}
+
+.animate-slideUp {
+  animation: slideUp 0.8s ease-out;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
