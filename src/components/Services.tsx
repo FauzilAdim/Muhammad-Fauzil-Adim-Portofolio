@@ -20,7 +20,7 @@ const Services: Component = () => {
               My Skills
             </h2>
             <p class="text-black/70 text-lg max-w-3xl mx-auto">
-              We offer a wide range of cutting-edge technology services to help your business stay ahead 
+              I offer a comprehensive range of cutting-edge technology services to help businesses stay ahead 
               in the competitive digital landscape.
             </p>
           </div>

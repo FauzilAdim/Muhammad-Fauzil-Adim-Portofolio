@@ -180,7 +180,7 @@ const Projects: Component = () => {
 
         {projects.length > 3 && (
           <div class="mt-16 text-center animate-slideUp">
-            <h3 class="mb-4 text-gray-600 text-sm">Some projects may not be displayed due to personal use or ownership permissions.</h3>
+            <h3 class="mb-4 text-gray-600 text-sm">Some projects may not be displayed due to confidentiality or ownership restrictions.</h3>
             <button
               onClick={() => setShowAll(!showAll())}
               class="inline-flex items-center gap-2 px-6 py-3 bg-black text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"

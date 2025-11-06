@@ -11,7 +11,7 @@ const Header: Component = () => {
         <div class="flex justify-between items-center py-4">
           {/* Logo */}
           <div class="flex items-center space-x-2">
-            <span class="text-black font-bold text-xl">Portofolio</span>
+            <span class="text-black font-bold text-xl">Portfolio</span>
           </div>
 
           {/* Desktop Navigation */}

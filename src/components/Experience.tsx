@@ -42,7 +42,7 @@ const Experience: Component<SectionProps> = (props) => {
       startDate: '2024-12',
       endDate: '2025-11',
       isCurrentJob: true,
-      description: 'Kontrak • 1 thn',
+      description: 'Contract • 1 year',
         responsibilities: [
     'Develop web applications using Rust, React.js, and Solid.js',
     'Implement RESTful APIs and integrate databases',
@@ -63,7 +63,7 @@ const Experience: Component<SectionProps> = (props) => {
       startDate: '2022-04',
       endDate: '2022-09',
       isCurrentJob: false,
-      description: 'Magang • 6 bln',
+      description: 'Internship • 6 months',
     responsibilities: [
     'Implement off-page and on-page SEO strategies',
     'Create articles optimized for SEO',
@@ -123,7 +123,7 @@ const Experience: Component<SectionProps> = (props) => {
             Experiences
           </h2>
           <p class="text-black/70 text-lg max-w-3xl mx-auto">
-            My career journey as a developer has spanned various roles in the technology industry, where I have built impactful and scalable digital solutions.
+            My professional journey as a developer encompasses diverse roles in the technology industry, where I have delivered impactful and scalable digital solutions.
           </p>
         </div>
 
@@ -153,7 +153,7 @@ const Experience: Component<SectionProps> = (props) => {
                       {exp.isCurrentJob && (
                         <div class="absolute -top-3 -right-3">
                           <span class="bg-blue-500 text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg animate-pulse">
-                            ✨ Previously 
+                            ✨ Current Position
                           </span>
                         </div>
                       )}
@@ -176,7 +176,7 @@ const Experience: Component<SectionProps> = (props) => {
                       <div class="mb-4">
                         <h4 class="text-sm font-semibold text-black mb-2 flex items-center gap-2">
                           <Code size={16} />
-                          Keahlian:
+                          Skills:
                         </h4>
                         <div class="flex flex-wrap gap-2">
                           <For each={exp.technologies}>
@@ -216,7 +216,7 @@ const Experience: Component<SectionProps> = (props) => {
                           <div>
                             <h4 class="text-base font-semibold mb-3 text-black flex items-center gap-2">
                               <Briefcase size={18} />
-                              Tanggung Jawab Utama
+                              Key Responsibilities
                             </h4>
                             <ul class="space-y-2">
                               <For each={exp.responsibilities}>
@@ -250,7 +250,7 @@ const Experience: Component<SectionProps> = (props) => {
                 <Briefcase size={42} strokeWidth={1.5} class="text-black" />
               </div>
               <h2 class="text-black font-bold text-2xl">{experiences.length}</h2>
-              <h3 class="text-gray-600 font-semibold text-sm mt-4">Perusahaan</h3>
+              <h3 class="text-gray-600 font-semibold text-sm mt-4">Companies</h3>
             </div>
             
             <div class="bg-gradient-to-br from-cyan-200 via-sky-100 to-blue-200 p-6 rounded-xl text-center transform hover:scale-105 transition-all duration-300 hover:shadow-xl">
@@ -258,7 +258,7 @@ const Experience: Component<SectionProps> = (props) => {
                 <Calendar size={42} strokeWidth={1.5} class="text-black" />
               </div>
               <h4 class="text-black font-bold text-2xl">2+</h4>
-              <h3 class="text-gray-600 font-semibold text-sm mt-4">Tahun Pengalaman</h3>
+              <h3 class="text-gray-600 font-semibold text-sm mt-4">Years of Experience</h3>
             </div>
             
             <div class="bg-gradient-to-br from-emerald-200 via-green-100 to-teal-200 p-6 rounded-xl text-center transform hover:scale-105 transition-all duration-300 hover:shadow-xl col-span-2 md:col-span-1">
@@ -268,7 +268,7 @@ const Experience: Component<SectionProps> = (props) => {
               <h4 class="text-black font-bold text-2xl">
                 {[...new Set(experiences.flatMap(exp => exp.technologies))].length}
               </h4>
-              <h3 class="text-gray-600 font-semibold text-sm mt-4">Teknologi Dikuasai</h3>
+              <h3 class="text-gray-600 font-semibold text-sm mt-4">Technologies Mastered</h3>
             </div>
           </div>
         </div>
