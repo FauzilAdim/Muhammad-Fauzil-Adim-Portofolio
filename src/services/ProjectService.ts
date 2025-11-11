@@ -15,7 +15,10 @@ export interface ApiResponse<T> {
 }
 
 export class ProjectService {
-  private static baseUrl = 'http://localhost:8080/api';
+  // Railway backend URL
+  private static baseUrl = import.meta.env.PROD 
+    ? 'https://web-production-8511.up.railway.app/api'  // Production (Railway)
+    : 'http://localhost:8080/api';  // Development (Local)
   
   static async getAllProjects(): Promise<Project[]> {
     try {
