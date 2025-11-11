@@ -121,6 +121,11 @@ export class ProjectService {
   }
 
   static getImageUrl(imagePath: string): string {
+    // If already a full URL (Cloudinary), return as is
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      return imagePath;
+    }
+    // Otherwise, use Railway URL for backward compatibility
     return `https://web-production-8511.up.railway.app${imagePath}`;
   }
 
