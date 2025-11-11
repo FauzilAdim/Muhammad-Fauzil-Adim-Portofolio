@@ -121,7 +121,7 @@ export class ProjectService {
   }
 
   static getImageUrl(imagePath: string): string {
-    return `http://localhost:8080${imagePath}`;
+    return `https://web-production-8511.up.railway.app${imagePath}`;
   }
 
   static getCoverImage(images: string[]): string {
