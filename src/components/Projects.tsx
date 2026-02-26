@@ -1,13 +1,13 @@
 import { Component, For, createSignal, createEffect, Show, onMount } from 'solid-js';
 import { Github, Globe, ChevronDown, ChevronUp } from 'lucide-solid';
-import { ProjectService, type Project as APIProject } from '../services/ProjectService';
+import { ProjectService, type Project, type DesignProject } from '../services/ProjectService';
 
 // Inject slide animations CSS
 const injectSlideAnimations = () => {
   if (typeof document === 'undefined') return;
   
   const styleId = 'slide-animations';
-  if (document.getElementById(styleId)) return; // Already injected
+  if (document.getElementById(styleId)) return;
   
   const style = document.createElement('style');
   style.id = styleId;
@@ -79,48 +79,44 @@ const injectSlideAnimations = () => {
   document.head.appendChild(style);
 };
 
-type Project = {
+// Combined type for display
+type DisplayProject = {
   id: string;
-  title: string;
+  name: string;
+  cover_image: string;
   description: string;
-  image: string;
-  images?: string[]; // Multiple images for modal slider
-  technologies: string[];
-  githubUrl?: string;
-  deployUrl?: string;
-  bgColor: string;
   category: 'web' | 'mobile' | 'design';
+  type: 'project' | 'design';
+  // Project specific
+  link_portfolio?: string;
+  stack?: string[];
+  // Design specific
+  images?: string[];
 };
 
 const Projects: Component = () => {
   const [showAll, setShowAll] = createSignal(false);
   const [selectedCategory, setSelectedCategory] = createSignal<'all' | 'web' | 'mobile' | 'design'>('all');
-  const [apiProjects, setApiProjects] = createSignal<APIProject[]>([]);
   const [loading, setLoading] = createSignal(true);
-  const [selectedProject, setSelectedProject] = createSignal<Project | null>(null);
+  const [selectedDesign, setSelectedDesign] = createSignal<DesignProject | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = createSignal(0);
+  const [allProjects, setAllProjects] = createSignal<DisplayProject[]>([]);
   
-  // Ref for thumbnail container
   let thumbnailContainerRef: HTMLDivElement | undefined;
   
-  // Inject CSS animations on mount
   onMount(() => {
     injectSlideAnimations();
   });
   
-  // Auto-scroll thumbnail list when image changes
+  // Auto-scroll thumbnail list
   createEffect(() => {
     const index = currentImageIndex();
-    if (thumbnailContainerRef && selectedProject()) {
-      // Calculate scroll position to center the active thumbnail
-      const thumbnailWidth = 100; // Width of each thumbnail
-      const gap = 16; // Gap between thumbnails (gap-4 = 16px)
+    if (thumbnailContainerRef && selectedDesign()) {
+      const thumbnailWidth = 100;
+      const gap = 16;
       const containerWidth = thumbnailContainerRef.clientWidth;
-      
-      // Calculate position to scroll to (center the active thumbnail)
       const scrollPosition = (thumbnailWidth + gap) * index - (containerWidth / 2) + (thumbnailWidth / 2);
       
-      // Smooth scroll to position
       thumbnailContainerRef.scrollTo({
         left: Math.max(0, scrollPosition),
         behavior: 'smooth'
@@ -128,34 +124,83 @@ const Projects: Component = () => {
     }
   });
 
+  // Load all projects
+  createEffect(async () => {
+    setLoading(true);
+    try {
+      // Fetch both projects and design projects
+      const [projects, designProjects] = await Promise.all([
+        ProjectService.getAllProjects(),
+        ProjectService.getAllDesignProjects()
+      ]);
+
+      // Convert to display format
+      const displayProjects: DisplayProject[] = [
+        ...projects.map(p => ({
+          id: p.id,
+          name: p.name,
+          cover_image: p.cover_image,
+          description: p.description,
+          category: p.category,
+          type: 'project' as const,
+          link_portfolio: p.link_portfolio,
+          stack: p.stack
+        })),
+        ...designProjects.map(d => ({
+          id: d.id,
+          name: d.name,
+          cover_image: d.cover_image,
+          description: d.description,
+          category: 'design' as const,
+          type: 'design' as const,
+          images: d.images
+        }))
+      ];
+
+      setAllProjects(displayProjects);
+    } catch (error) {
+      console.error('Error loading projects:', error);
+      setAllProjects([]);
+    } finally {
+      setLoading(false);
+    }
+  });
+
   // Modal functions
-  const openModal = (project: Project) => {
-    setSelectedProject(project);
-    setCurrentImageIndex(0);
-    document.body.style.overflow = 'hidden'; // Prevent scroll
+  const openDesignModal = async (designId: string) => {
+    try {
+      const design = await ProjectService.getDesignProjectById(designId);
+      if (design) {
+        setSelectedDesign(design);
+        setCurrentImageIndex(0);
+        document.body.style.overflow = 'hidden';
+      }
+    } catch (error) {
+      console.error('Error loading design:', error);
+    }
   };
 
   const closeModal = () => {
-    setSelectedProject(null);
+    setSelectedDesign(null);
     setCurrentImageIndex(0);
-    document.body.style.overflow = 'auto'; // Restore scroll
+    document.body.style.overflow = 'auto';
   };
 
   const [slideDirection, setSlideDirection] = createSignal<'left' | 'right'>('right');
 
   const nextImage = () => {
-    const project = selectedProject();
-    if (project && project.images) {
+    const design = selectedDesign();
+    if (design && design.images) {
       setSlideDirection('right');
-      setCurrentImageIndex((prev) => (prev + 1) % project.images!.length);
+      setCurrentImageIndex((prev) => (prev + 1) % design.images.length);
     }
   };
 
   const prevImage = () => {
-    const project = selectedProject();
-    if (project && project.images) {
+    const design = selectedDesign();
+    if (design && design.images) {
       setSlideDirection('left');
-      setCurrentImageIndex((prev) => (prev - 1 + project.images!.length) % project.images!.length);
+      setCurrentImageIndex((prev) => (prev - 1 + design.images.length) % design.images.length);
     }
   };
 
@@ -169,64 +214,7 @@ const Projects: Component = () => {
     setCurrentImageIndex(index);
   };
 
-  // Load projects from API - always load all projects
-  createEffect(async () => {
-    setLoading(true);
-    try {
-      const data = await ProjectService.getAllProjects();
-      setApiProjects(data);
-    } catch (error) {
-      console.error('Error loading projects:', error);
-      setApiProjects([]); // Set empty array on error
-    } finally {
-      setLoading(false);
-    }
-  });
-
-  // NO MORE HARDCODED PROJECTS - ALL FROM API ONLY
-
-  // Convert API projects to display format
-  const convertedApiProjects = (): Project[] => {
-    return apiProjects().map(project => {
-      // Map backend category to frontend category
-      let displayCategory: 'web' | 'mobile' | 'design' = 'web';
-      
-      if (project.category === 'mobile_development') {
-        displayCategory = 'mobile';
-      } else if (project.category === 'design_&_ui/ux') {
-        displayCategory = 'design';
-      } else if (project.category === 'web_development') {
-        displayCategory = 'web';
-      }
-      
-      // Determine bgColor based on category
-      let bgColor = 'from-blue-400 to-cyan-400';
-      if (displayCategory === 'mobile') {
-        bgColor = 'from-purple-500 to-indigo-600';
-      } else if (displayCategory === 'design') {
-        bgColor = 'from-pink-500 to-rose-600';
-      } else if (displayCategory === 'web') {
-        bgColor = 'from-blue-400 to-cyan-400';
-      }
-      
-      return {
-        id: project.id,
-        title: project.name,
-        description: project.description,
-        image: ProjectService.getCoverImage(project.images), // Use cover image (first image)
-        images: ProjectService.getAllImageUrls(project.images), // All images for modal
-        technologies: [],
-        bgColor,
-        category: displayCategory
-      };
-    });
-  };
-
-  // Use only API projects - no hardcoded projects
-  const allProjects = () => {
-    return convertedApiProjects();
-  };
-
+  // Filter projects
   const filteredProjects = () => {
     if (selectedCategory() === 'all') {
       return allProjects();
@@ -234,7 +222,32 @@ const Projects: Component = () => {
     return allProjects().filter(project => project.category === selectedCategory());
   };
 
-  const visibleProjects = () => (showAll() ? filteredProjects() : filteredProjects().slice(0, 3));
+  const visibleProjects = () => (showAll() ? filteredProjects() : filteredProjects().slice(0, 6));
+
+  // Handle click
+  const handleProjectClick = (project: DisplayProject) => {
+    if (project.type === 'project' && project.link_portfolio) {
+      // Open external link
+      window.open(project.link_portfolio, '_blank');
+    } else if (project.type === 'design') {
+      // Open modal
+      openDesignModal(project.id);
+    }
+  };
+
+  // Get gradient color based on category
+  const getGradientColor = (category: string) => {
+    switch (category) {
+      case 'web':
+        return 'from-blue-400 to-cyan-400';
+      case 'mobile':
+        return 'from-purple-500 to-indigo-600';
+      case 'design':
+        return 'from-pink-500 to-rose-600';
+      default:
+        return 'from-blue-400 to-cyan-400';
+    }
+  };
 
   return (
     <section class="py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
@@ -250,7 +263,7 @@ const Projects: Component = () => {
         <div class="text-center mb-16 animate-fadeIn">
           <h2 class="text-4xl md:text-5xl font-bold text-black mb-8">My Projects</h2>
           <p class="text-black/70 text-lg max-w-3xl mx-auto">
-            A collection of projects I’ve built using modern technologies and industry best practices.
+            A collection of projects I've built using modern technologies and industry best practices.
           </p>
         </div>
 
@@ -324,22 +337,20 @@ const Projects: Component = () => {
             <For each={visibleProjects()}>
             {(project, index) => (
               <>
-                {/* Design Projects - Full Image Layout with Preview */}
+                {/* Design Projects - Full Image Layout */}
                 {project.category === 'design' ? (
                   <div
-                    class="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 group animate-slideUp border"
+                    class="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 group animate-slideUp border cursor-pointer"
                     style={`animation-delay: ${index() * 0.1}s; animation-fill-mode: both;`}
+                    onClick={() => handleProjectClick(project)}
                   >
-                    {/* Full Image with Hover Effect */}
-                    <div class="relative overflow-hidden cursor-pointer" onClick={() => project.images && project.images.length > 0 && openModal(project)}>
+                    <div class="relative overflow-hidden">
                       <img
-                        src={project.image}
-                        alt={project.title}
+                        src={project.cover_image}
+                        alt={project.name}
                         class="w-full h-80 object-cover transform group-hover:scale-110 transition-transform duration-700"
                       />
-                      {/* Dark Overlay on Hover */}
                       <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center">
-                        {/* Eye Icon & Text - Centered */}
                         <div class="transform scale-0 group-hover:scale-100 transition-transform duration-500 flex flex-col items-center justify-center">
                           <svg class="w-16 h-16 text-white mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -348,7 +359,6 @@ const Projects: Component = () => {
                           <p class="text-white text-center font-semibold text-lg">View Details</p>
                         </div>
                       </div>
-                      {/* Image Count Badge */}
                       <Show when={project.images && project.images.length > 1}>
                         <div class="absolute top-4 right-4 bg-black/70 text-white px-3 py-1 rounded-full text-sm font-semibold">
                           {project.images!.length} images
@@ -356,79 +366,53 @@ const Projects: Component = () => {
                       </Show>
                     </div>
 
-                    {/* Content */}
                     <div class="p-6">
-                      <h3 class="text-xl font-bold text-black mb-2">{project.title}</h3>
+                      <h3 class="text-xl font-bold text-black mb-2">{project.name}</h3>
                       <p class="text-gray-600 text-sm mb-4">{project.description}</p>
-
-                      <div class="flex flex-wrap gap-2 mb-4">
-                        <For each={project.technologies}>
-                          {(tech) => (
-                            <span class="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-semibold rounded-full">
-                              {tech}
-                            </span>
-                          )}
-                        </For>
-                      </div>
-
-                      {/* Like & Comment Buttons */}
-                      <div class="flex items-center gap-4 pt-4 border-t border-gray-100">
-                        <button class="flex items-center gap-2 text-gray-700 hover:text-red-500 font-medium text-sm transition-colors duration-300">
-                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                          </svg>
-                          <span>0</span>
-                        </button>
-                        <button class="flex items-center gap-2 text-gray-700 hover:text-blue-500 font-medium text-sm transition-colors duration-300">
-                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                          </svg>
-                          <span>0</span>
-                        </button>
-                      </div>
                     </div>
                   </div>
                 ) : (
                   /* Web & Mobile Projects - Card with Gradient */
                   <div
-                    class="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 group animate-slideUp p-3 border"
+                    class="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 group animate-slideUp p-3 border cursor-pointer"
                     style={`animation-delay: ${index() * 0.1}s; animation-fill-mode: both;`}
+                    onClick={() => handleProjectClick(project)}
                   >
                     <div class="p-4">
-                      <h3 class="text-xl font-bold text-black mb-3">{project.title}</h3>
+                      <h3 class="text-xl font-bold text-black mb-3">{project.name}</h3>
 
-                      <div class="flex flex-wrap gap-2 mb-4">
-                        <For each={project.technologies}>
-                          {(tech) => (
-                            <span class="px-3 py-1 bg-black text-white text-xs font-semibold rounded-full">
-                              {tech}
-                            </span>
-                          )}
-                        </For>
-                      </div>
+                      <Show when={project.stack && project.stack.length > 0}>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                          <For each={project.stack}>
+                            {(tech) => (
+                              <span class="px-3 py-1 bg-black text-white text-xs font-semibold rounded-full">
+                                {tech}
+                              </span>
+                            )}
+                          </For>
+                        </div>
+                      </Show>
                     </div>
 
-                    {/* IMAGE with Gradient */}
-                    <div class={`relative p-2 bg-gradient-to-br rounded-2xl ${project.bgColor}`}>
+                    <div class={`relative p-2 bg-gradient-to-br rounded-2xl ${getGradientColor(project.category)}`}>
                       <div class="bg-white rounded-2xl overflow-hidden shadow-xl">
                         <img
-                          src={project.image}
-                          alt={project.title}
+                          src={project.cover_image}
+                          alt={project.name}
                           class="w-full h-52 object-cover transform group-hover:scale-105 transition-transform duration-500"
                         />
                       </div>
                     </div>
 
                     <div class="p-6">
+                      <p class="text-gray-600 text-sm mb-4">{project.description}</p>
                       <div class="flex items-center gap-4 pt-4 border-t border-gray-100">
-                        <a href={project.githubUrl} class="flex items-center gap-2 text-gray-700 hover:text-black font-medium text-sm transition-colors duration-300">
-                          <Github size={18} />
-                          Github
-                        </a>
-                        <a href={project.deployUrl} class="flex items-center gap-2 text-gray-700 hover:text-black font-medium text-sm transition-colors duration-300">
-                          <Globe size={18} />
-                          Deploy
-                        </a>
+                        <Show when={project.link_portfolio}>
+                          <div class="flex items-center gap-2 text-gray-700 hover:text-black font-medium text-sm transition-colors duration-300">
+                            <Globe size={18} />
+                            View Live
+                          </div>
+                        </Show>
                       </div>
                     </div>
                   </div>
@@ -439,9 +423,8 @@ const Projects: Component = () => {
           </div>
         </Show>
 
-        {!loading() && filteredProjects().length > 3 && (
+        {!loading() && filteredProjects().length > 6 && (
           <div class="mt-16 text-center animate-slideUp">
-            <h3 class="mb-4 text-gray-600 text-sm">Some projects may not be displayed due to confidentiality or ownership restrictions.</h3>
             <button
               onClick={() => setShowAll(!showAll())}
               class="inline-flex items-center gap-2 px-6 py-3 bg-black text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
@@ -451,16 +434,22 @@ const Projects: Component = () => {
             </button>
           </div>
         )}
+
+        {/* Empty State */}
+        <Show when={!loading() && filteredProjects().length === 0}>
+          <div class="text-center py-12">
+            <p class="text-gray-600 text-lg">No projects found in this category.</p>
+          </div>
+        </Show>
       </div>
 
-      {/* Image Preview Modal */}
-      <Show when={selectedProject()}>
+      {/* Design Image Preview Modal */}
+      <Show when={selectedDesign()}>
         <div 
           class="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 animate-fadeIn"
           onClick={closeModal}
         >
           <div class="relative max-w-6xl w-full" onClick={(e) => e.stopPropagation()}>
-            {/* Close Button */}
             <button
               onClick={closeModal}
               class="absolute -top-12 right-0 text-white hover:text-gray-300 transition-colors"
@@ -470,31 +459,26 @@ const Projects: Component = () => {
               </svg>
             </button>
 
-            {/* Project Title */}
             <div class="text-center mb-6">
-              <h2 class="text-3xl font-bold text-white mb-2">{selectedProject()!.title}</h2>
-              <p class="text-gray-300">{selectedProject()!.description}</p>
+              <h2 class="text-3xl font-bold text-white mb-2">{selectedDesign()!.name}</h2>
+              <p class="text-gray-300">{selectedDesign()!.description}</p>
             </div>
 
-            {/* Main Image with Slide Animation */}
             <div class="relative bg-white rounded-2xl overflow-hidden shadow-2xl">
-              <Show when={selectedProject()!.images && selectedProject()!.images!.length > 0}>
+              <Show when={selectedDesign()!.images && selectedDesign()!.images.length > 0}>
                 <div class="relative w-full" style="min-height: 400px;">
-                  {/* Wrap img in div with key for proper re-rendering */}
                   <div 
                     class={slideDirection() === 'right' ? 'animate-slideInRight' : 'animate-slideInLeft'}
                   >
                     <img
-                      src={selectedProject()!.images![currentImageIndex()]}
-                      alt={`${selectedProject()!.title} - Image ${currentImageIndex() + 1}`}
+                      src={selectedDesign()!.images[currentImageIndex()]}
+                      alt={`${selectedDesign()!.name} - Image ${currentImageIndex() + 1}`}
                       class="w-full h-auto max-h-[70vh] object-contain"
                     />
                   </div>
                 </div>
 
-                {/* Navigation Buttons */}
-                <Show when={selectedProject()!.images!.length > 1}>
-                  {/* Previous Button */}
+                <Show when={selectedDesign()!.images.length > 1}>
                   <button
                     onClick={prevImage}
                     class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/70 hover:bg-black text-white p-3 rounded-full transition-all duration-300 hover:scale-110"
@@ -504,7 +488,6 @@ const Projects: Component = () => {
                     </svg>
                   </button>
 
-                  {/* Next Button */}
                   <button
                     onClick={nextImage}
                     class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/70 hover:bg-black text-white p-3 rounded-full transition-all duration-300 hover:scale-110"
@@ -514,22 +497,20 @@ const Projects: Component = () => {
                     </svg>
                   </button>
 
-                  {/* Image Counter */}
                   <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-full text-sm font-semibold">
-                    {currentImageIndex() + 1} / {selectedProject()!.images!.length}
+                    {currentImageIndex() + 1} / {selectedDesign()!.images.length}
                   </div>
                 </Show>
               </Show>
             </div>
 
-            {/* Thumbnail Navigation - Improved with Auto-Scroll */}
-            <Show when={selectedProject()!.images && selectedProject()!.images!.length > 1}>
+            <Show when={selectedDesign()!.images && selectedDesign()!.images.length > 1}>
               <div class="mt-8 thumbnail-container">
                 <div 
                   ref={thumbnailContainerRef}
                   class="flex gap-4 justify-start overflow-x-auto pb-4 px-4 scrollbar-hide"
                 >
-                  <For each={selectedProject()!.images}>
+                  <For each={selectedDesign()!.images}>
                     {(image, idx) => (
                       <button
                         onClick={() => goToImage(idx())}
@@ -545,7 +526,6 @@ const Projects: Component = () => {
                           alt={`Thumbnail ${idx() + 1}`}
                           class="w-full h-full object-cover"
                         />
-                        {/* Active Indicator */}
                         <Show when={currentImageIndex() === idx()}>
                           <div class="absolute inset-0 border-2 border-white rounded-xl pointer-events-none"></div>
                         </Show>
