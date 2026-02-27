@@ -271,7 +271,8 @@ const Projects: Component = () => {
     const design = selectedDesign();
     if (design) {
       // Use /design/:id route for better OG preview
-      const url = `${window.location.origin}/design/${design.id}`;
+      // Add version parameter to force cache refresh
+      const url = `${window.location.origin}/design/${design.id}?v=6`;
       setShareUrl(url);
       setShowShareModal(true);
     }

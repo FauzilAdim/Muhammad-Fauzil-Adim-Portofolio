@@ -34,6 +34,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.redirect(302, '/');
     }
 
+    // Use the design's cover image for OG preview
+    const ogImage = designData.cover_image || 'https://muhammad-fauzil-adim.vercel.app/Logo.png';
+    const title = `${designData.name} - Muhammad Fauzil Adim Portfolio`;
+    const description = designData.description || 'View my design project';
+
     // Generate HTML with dynamic meta tags
     const html = `
 <!DOCTYPE html>
@@ -43,16 +48,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
     <link rel="icon" type="image/x-icon" href="/Logo.png" />
-    <title>${designData.name} - Muhammad Fauzil Adim</title>
+    <title>${title}</title>
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://muhammad-fauzil-adim.vercel.app/design/${design}" />
-    <meta property="og:title" content="${designData.name} - Muhammad Fauzil Adim" />
-    <meta property="og:description" content="${designData.description || 'View my design project'}" />
-    <meta property="og:image" content="${designData.cover_image}" />
-    <meta property="og:image:secure_url" content="${designData.cover_image}" />
-    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:title" content="${title}" />
+    <meta property="og:description" content="${description}" />
+    <meta property="og:image" content="${ogImage}" />
+    <meta property="og:image:secure_url" content="${ogImage}" />
+    <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="${designData.name}" />
@@ -60,9 +65,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:url" content="https://muhammad-fauzil-adim.vercel.app/design/${design}" />
-    <meta name="twitter:title" content="${designData.name} - Muhammad Fauzil Adim" />
-    <meta name="twitter:description" content="${designData.description || 'View my design project'}" />
-    <meta name="twitter:image" content="${designData.cover_image}" />
+    <meta name="twitter:title" content="${title}" />
+    <meta name="twitter:description" content="${description}" />
+    <meta name="twitter:image" content="${ogImage}" />
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -73,7 +78,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   <body class="font-inter bg-dark-900">
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
-    <p>Redirecting...</p>
+    <p>Redirecting to ${designData.name}...</p>
   </body>
 </html>
     `;
