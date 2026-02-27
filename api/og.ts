@@ -7,16 +7,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'Design ID is required' });
   }
 
-  // Fetch design data from Supabase
-  const supabaseUrl = process.env.VITE_SUPABASE_URL;
-  const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
+  // Use environment variables without VITE_ prefix for serverless functions
+  const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+  const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    return res.status(500).json({ error: 'Supabase configuration missing' });
+  }
 
   try {
     const response = await fetch(
       `${supabaseUrl}/rest/v1/design_projects?id=eq.${design}&select=*`,
       {
         headers: {
-          'apikey': supabaseKey!,
+          'apikey': supabaseKey,
           'Authorization': `Bearer ${supabaseKey}`,
         },
       }
@@ -26,7 +30,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const designData = data[0];
 
     if (!designData) {
-      return res.status(404).json({ error: 'Design not found' });
+      // Redirect to homepage if design not found
+      return res.redirect(302, '/');
     }
 
     // Generate HTML with dynamic meta tags
@@ -42,16 +47,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://muhammad-fauzil-adim.vercel.app/?design=${design}" />
+    <meta property="og:url" content="https://muhammad-fauzil-adim.vercel.app/design/${design}" />
     <meta property="og:title" content="${designData.name} - Muhammad Fauzil Adim" />
     <meta property="og:description" content="${designData.description}" />
     <meta property="og:image" content="${designData.cover_image}" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="${designData.name}" />
     
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://muhammad-fauzil-adim.vercel.app/?design=${design}" />
+    <meta property="twitter:url" content="https://muhammad-fauzil-adim.vercel.app/design/${design}" />
     <meta property="twitter:title" content="${designData.name} - Muhammad Fauzil Adim" />
     <meta property="twitter:description" content="${designData.description}" />
     <meta property="twitter:image" content="${designData.cover_image}" />
@@ -60,23 +66,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <script>
-      // Redirect to main app with design parameter
-      window.location.href = '/?design=${design}';
-    </script>
+    <meta http-equiv="refresh" content="0;url=/?design=${design}">
   </head>
   <body class="font-inter bg-dark-900">
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
-    <script src="/src/index.tsx" type="module"></script>
+    <p>Redirecting...</p>
   </body>
 </html>
     `;
 
     res.setHeader('Content-Type', 'text/html');
+    res.setHeader('Cache-Control', 'public, max-age=3600, s-maxage=3600');
     return res.status(200).send(html);
   } catch (error) {
     console.error('Error fetching design:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.redirect(302, '/');
   }
 }
