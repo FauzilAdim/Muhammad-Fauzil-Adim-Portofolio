@@ -260,8 +260,7 @@ const Projects: Component = () => {
   const openShareModal = () => {
     const design = selectedDesign();
     if (design) {
-      // Share homepage URL instead of design-specific URL since we don't have routing
-      const url = window.location.origin;
+      const url = `${window.location.origin}/design/${design.id}`;
       setShareUrl(url);
       setShowShareModal(true);
     }
