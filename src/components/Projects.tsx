@@ -642,62 +642,95 @@ const Projects: Component = () => {
                 {/* Design Projects - Dribbble Style */}
                 {project.category === 'design' ? (
                   <div
-                    class="group cursor-pointer animate-slideUp"
+                    class="animate-slideUp"
                     style={`animation-delay: ${index() * 0.1}s; animation-fill-mode: both;`}
-                    onClick={() => handleProjectClick(project)}
                   >
-                    {/* Image Container */}
-                    <div class="relative overflow-hidden rounded-2xl bg-gray-100 shadow-md hover:shadow-xl transition-all duration-300">
+                    {/* Image Container - Clickable */}
+                    <div class="group relative overflow-hidden rounded-2xl bg-gray-100 shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer"
+                         onClick={() => handleProjectClick(project)}>
                       <img
                         src={project.cover_image}
                         alt={project.name}
                         class="w-full h-72 object-cover transform group-hover:scale-105 transition-transform duration-500"
                       />
                       
-                      {/* Hover Overlay - Gradient 40% */}
-                      <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <div class="absolute bottom-0 left-0 right-0 p-6">
-                          {/* Title and Stats */}
-                          <div class="flex items-end justify-between gap-4">
-                            <h3 class="text-white text-xl font-medium truncate flex-1">{project.name}</h3>
-                            
-                            {/* Stats with clickable heart */}
-                            <div class="flex items-center gap-4 flex-shrink-0 text-white text-sm">
-                              {/* Likes - Clickable (First, like Dribbble) */}
-                              <button
-                                onClick={(e) => handleCardLike(e, project.id)}
-                                class={`flex items-center gap-1.5 transition-colors relative ${
-                                  cardLikingStates()[project.id] ? 'pointer-events-none' : ''
-                                }`}
-                              >
-                                {/* Loading Spinner */}
-                                <Show when={cardLikingStates()[project.id]}>
-                                  <div class="absolute inset-0 flex items-center justify-center spinner-to-heart">
-                                    <svg class="w-4 h-4 text-red-400" fill="none" viewBox="0 0 24 24">
-                                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                  </div>
-                                </Show>
-                                
-                                <svg 
-                                  class={`w-4 h-4 transition-all ${
-                                    cardLikeStates()[project.id] ? 'text-red-400 fill-current heart-bounce' : 'text-white'
-                                  } ${cardLikingStates()[project.id] ? 'opacity-0' : 'opacity-100'}`}
-                                  fill="currentColor" 
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                                </svg>
-                                <span class={cardLikeStates()[project.id] ? 'text-red-400' : 'text-white'}>{project.likes || 0}</span>
-                              </button>
+                      {/* Hover Overlay with Action Buttons */}
+                      <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        {/* Floating Action Buttons - Bottom Right Horizontal */}
+                        <div class="absolute bottom-4 right-4 flex items-center gap-2 action-buttons">
+                          {/* Like Button */}
+                          <div class="relative group/tooltip">
+                            <button 
+                              class={`p-2 rounded-full shadow-md border transition-all duration-200 ${
+                                cardLikeStates()[project.id]
+                                  ? 'bg-red-50 border-red-300 hover:bg-red-100' 
+                                  : 'bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                              } ${cardLikingStates()[project.id] ? 'pointer-events-none' : ''}`}
+                              onClick={(e) => handleCardLike(e, project.id)}
+                            >
+                              {/* Loading Spinner */}
+                              <Show when={cardLikingStates()[project.id]}>
+                                <div class="absolute inset-0 flex items-center justify-center spinner-to-heart">
+                                  <svg class="w-4 h-4 text-red-500" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                  </svg>
+                                </div>
+                              </Show>
                               
-                              {/* Views (Second) */}
-                              <div class="flex items-center gap-1.5 text-white">
-                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                                  <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
-                                </svg>
-                                <span>{project.views || 0}</span>
+                              <svg 
+                                class={`w-4 h-4 transition-all ${
+                                  cardLikeStates()[project.id] ? 'text-red-500 fill-red-500 heart-bounce' : 'text-gray-900'
+                                } ${cardLikingStates()[project.id] ? 'opacity-0' : 'opacity-100'}`} 
+                                fill={cardLikeStates()[project.id] ? 'currentColor' : 'none'} 
+                                stroke="currentColor" 
+                                viewBox="0 0 24 24" 
+                                stroke-width="2"
+                              >
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                              </svg>
+                            </button>
+                            {/* Tooltip */}
+                            <div class="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 opacity-0 translate-y-2 group-hover/tooltip:opacity-100 group-hover/tooltip:translate-y-0 transition-all duration-200 pointer-events-none">
+                              <div class="relative">
+                                <div class="bg-gray-900 text-white text-xs font-medium px-3 py-1.5 rounded-lg whitespace-nowrap shadow-lg">
+                                  {cardLikingStates()[project.id] ? 'Loading...' : cardLikeStates()[project.id] ? 'Unlike' : 'Like'}
+                                </div>
+                                {/* Arrow pointing down */}
+                                <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-gray-900"></div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Share Button */}
+                          <div class="relative group/tooltip">
+                            <button 
+                              class="bg-white hover:bg-gray-50 p-2 rounded-full shadow-md border border-gray-200 hover:border-gray-300 transition-all duration-200"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openDesignModal(project.id);
+                                setTimeout(() => {
+                                  const design = selectedDesign();
+                                  if (design) {
+                                    const url = `${window.location.origin}/design/${design.id}?v=6`;
+                                    setShareUrl(url);
+                                    setShowShareModal(true);
+                                  }
+                                }, 100);
+                              }}
+                            >
+                              <svg class="w-4 h-4 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                              </svg>
+                            </button>
+                            {/* Tooltip */}
+                            <div class="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 opacity-0 translate-y-2 group-hover/tooltip:opacity-100 group-hover/tooltip:translate-y-0 transition-all duration-200 pointer-events-none">
+                              <div class="relative">
+                                <div class="bg-gray-900 text-white text-xs font-medium px-3 py-1.5 rounded-lg whitespace-nowrap shadow-lg">
+                                  Share
+                                </div>
+                                {/* Arrow pointing down */}
+                                <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-gray-900"></div>
                               </div>
                             </div>
                           </div>
@@ -713,6 +746,38 @@ const Projects: Component = () => {
                           {project.images!.length}
                         </div>
                       </Show>
+                    </div>
+                    
+                    {/* Info Below Image - Not Clickable */}
+                    <div class="mt-3 flex items-start justify-between gap-3">
+                      <h3 class="text-gray-900 font-medium truncate flex-1 select-text">{project.name}</h3>
+                      
+                      {/* Stats - Only heart is clickable */}
+                      <div class="flex items-center gap-3 flex-shrink-0 text-gray-600 text-sm">
+                        {/* Likes - Clickable */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCardLike(e, project.id);
+                          }}
+                          class={`flex items-center gap-1 transition-colors ${
+                            cardLikeStates()[project.id] ? 'text-red-500' : 'text-gray-600 hover:text-red-500'
+                          } ${cardLikingStates()[project.id] ? 'pointer-events-none' : ''}`}
+                        >
+                          <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                          </svg>
+                          <span class="text-xs">{project.likes || 0}</span>
+                        </button>
+                        
+                        {/* Views - Not clickable */}
+                        <div class="flex items-center gap-1 select-none">
+                          <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                          </svg>
+                          <span class="text-xs">{project.views || 0}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ) : (
@@ -896,10 +961,10 @@ const Projects: Component = () => {
                       <div class="border-t border-gray-200 pt-6">
                         <div class="flex items-center justify-end gap-4">
                           {/* Likes (First, like Dribbble) */}
-                          <div class={`flex items-center gap-1.5 transition-colors ${
-                            isLiked() ? 'text-red-500' : 'text-gray-600'
-                          }`}>
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                          <div class="flex items-center gap-1.5 text-gray-600">
+                            <svg class={`w-4 h-4 transition-colors ${
+                              isLiked() ? 'text-red-500' : 'text-gray-600'
+                            }`} fill="currentColor" viewBox="0 0 24 24">
                               <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
                             </svg>
                             <span class="text-sm">{likesCount()}</span>
