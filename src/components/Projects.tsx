@@ -270,7 +270,8 @@ const Projects: Component = () => {
   const openShareModal = () => {
     const design = selectedDesign();
     if (design) {
-      const url = `${window.location.origin}/?design=${design.id}`;
+      // Use /design/:id route for better OG preview
+      const url = `${window.location.origin}/design/${design.id}`;
       setShareUrl(url);
       setShowShareModal(true);
     }
