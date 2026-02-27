@@ -217,6 +217,8 @@ type DisplayProject = {
   stack?: string[];
   // Design specific
   images?: string[];
+  views?: number;
+  likes?: number;
 };
 
 const Projects: Component = () => {
@@ -233,6 +235,8 @@ const Projects: Component = () => {
   const [likesCount, setLikesCount] = createSignal(0);
   const [viewsCount, setViewsCount] = createSignal(0);
   const [isLiking, setIsLiking] = createSignal(false);
+  const [cardLikeStates, setCardLikeStates] = createSignal<Record<string, boolean>>({});
+  const [cardLikingStates, setCardLikingStates] = createSignal<Record<string, boolean>>({});
   
   let thumbnailContainerRef: HTMLDivElement | undefined;
   
@@ -295,11 +299,27 @@ const Projects: Component = () => {
           description: d.description,
           category: 'design' as const,
           type: 'design' as const,
-          images: d.images
+          images: d.images,
+          views: d.views || 0,
+          likes: d.likes || 0
         }))
       ];
 
       setAllProjects(displayProjects);
+      
+      // Load like states for all design projects
+      const likeStates: Record<string, boolean> = {};
+      await Promise.all(
+        designProjects.map(async (d) => {
+          try {
+            const liked = await ProjectService.checkLikeStatus(d.id);
+            likeStates[d.id] = liked;
+          } catch (error) {
+            likeStates[d.id] = false;
+          }
+        })
+      );
+      setCardLikeStates(likeStates);
     } catch (error) {
       console.error('Error loading projects:', error);
       setAllProjects([]);
@@ -375,12 +395,58 @@ const Projects: Component = () => {
       if (result.success) {
         setIsLiked(result.liked);
         setLikesCount(prev => result.liked ? prev + 1 : prev - 1);
+        
+        // Update card like state
+        setCardLikeStates(prev => ({ ...prev, [design.id]: result.liked }));
+        
+        // Update project in list
+        setAllProjects(prev => prev.map(p => 
+          p.id === design.id 
+            ? { ...p, likes: result.liked ? (p.likes || 0) + 1 : Math.max((p.likes || 0) - 1, 0) }
+            : p
+        ));
       }
     } catch (error) {
       console.error('Error toggling like:', error);
-      // Revert optimistic update if failed
     } finally {
       setIsLiking(false);
+    }
+  };
+
+  const handleCardLike = async (e: MouseEvent, projectId: string) => {
+    e.stopPropagation();
+    
+    const likingStates = cardLikingStates();
+    if (likingStates[projectId]) return;
+
+    setCardLikingStates(prev => ({ ...prev, [projectId]: true }));
+
+    try {
+      // Simulate loading for smooth animation
+      await new Promise(resolve => setTimeout(resolve, 600));
+
+      const result = await ProjectService.toggleLike(projectId);
+      if (result.success) {
+        setCardLikeStates(prev => ({ ...prev, [projectId]: result.liked }));
+        
+        // Update project likes count in list
+        setAllProjects(prev => prev.map(p => 
+          p.id === projectId 
+            ? { ...p, likes: result.liked ? (p.likes || 0) + 1 : Math.max((p.likes || 0) - 1, 0) }
+            : p
+        ));
+
+        // If modal is open for this design, update modal state too
+        const design = selectedDesign();
+        if (design && design.id === projectId) {
+          setIsLiked(result.liked);
+          setLikesCount(prev => result.liked ? prev + 1 : prev - 1);
+        }
+      }
+    } catch (error) {
+      console.error('Error toggling like:', error);
+    } finally {
+      setCardLikingStates(prev => ({ ...prev, [projectId]: false }));
     }
   };
 
@@ -601,7 +667,7 @@ const Projects: Component = () => {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  // Handle view action
+                                  // Just open modal to view
                                 }}
                                 class="text-white hover:text-gray-200 transition-colors"
                               >
@@ -613,17 +679,58 @@ const Projects: Component = () => {
                               
                               {/* Heart Icon for Like */}
                               <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  // Handle like action
-                                }}
-                                class="text-white hover:text-red-400 transition-colors"
+                                onClick={(e) => handleCardLike(e, project.id)}
+                                class={`transition-colors relative ${
+                                  cardLikeStates()[project.id] 
+                                    ? 'text-red-400' 
+                                    : 'text-white hover:text-red-400'
+                                } ${cardLikingStates()[project.id] ? 'pointer-events-none' : ''}`}
                               >
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                                {/* Loading Spinner */}
+                                <Show when={cardLikingStates()[project.id]}>
+                                  <div class="absolute inset-0 flex items-center justify-center spinner-to-heart">
+                                    <svg class="w-6 h-6 text-red-400" fill="none" viewBox="0 0 24 24">
+                                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                  </div>
+                                </Show>
+                                
+                                <svg 
+                                  class={`w-6 h-6 transition-all ${
+                                    cardLikeStates()[project.id] ? 'fill-red-400 heart-bounce' : ''
+                                  } ${cardLikingStates()[project.id] ? 'opacity-0' : 'opacity-100'}`}
+                                  fill={cardLikeStates()[project.id] ? 'currentColor' : 'none'} 
+                                  stroke="currentColor" 
+                                  viewBox="0 0 24 24" 
+                                  stroke-width="2.5"
+                                >
                                   <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
                                 </svg>
                               </button>
                             </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Stats Bar - Bottom */}
+                      <div class="absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm px-4 py-3 flex items-center justify-between text-sm">
+                        <span class="font-medium truncate text-gray-800">{project.name}</span>
+                        <div class="flex items-center gap-4 flex-shrink-0 text-gray-600">
+                          {/* Views */}
+                          <div class="flex items-center gap-1.5">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                            </svg>
+                            <span class="font-semibold">{project.views || 0}</span>
+                          </div>
+                          
+                          {/* Likes */}
+                          <div class="flex items-center gap-1.5">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                            </svg>
+                            <span class="font-semibold">{project.likes || 0}</span>
                           </div>
                         </div>
                       </div>
@@ -818,19 +925,24 @@ const Projects: Component = () => {
 
                       {/* Stats */}
                       <div class="border-t border-gray-200 pt-6">
-                        <div class="flex items-center gap-2 text-black mb-4">
-                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                          </svg>
-                          <span class="text-base font-semibold">{viewsCount()}</span>
-                        </div>
-                        
-                        <div class="flex items-center gap-2 text-black">
-                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
-                          </svg>
-                          <span class="text-base font-semibold">{likesCount()}</span>
+                        <div class="flex items-center gap-6">
+                          {/* Views */}
+                          <div class="flex items-center gap-2 text-gray-600">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                            </svg>
+                            <span class="text-base font-semibold">{viewsCount()}</span>
+                          </div>
+                          
+                          {/* Likes */}
+                          <div class={`flex items-center gap-2 transition-colors ${
+                            isLiked() ? 'text-red-500' : 'text-gray-600'
+                          }`}>
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                            </svg>
+                            <span class="text-base font-semibold">{likesCount()}</span>
+                          </div>
                         </div>
                       </div>
                     </div>
