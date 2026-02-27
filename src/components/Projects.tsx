@@ -177,6 +177,16 @@ const Projects: Component = () => {
   
   onMount(() => {
     injectSlideAnimations();
+    
+    // Check if there's a design ID in URL query parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const designId = urlParams.get('design');
+    if (designId) {
+      // Wait for projects to load, then open the modal
+      setTimeout(() => {
+        openDesignModal(designId);
+      }, 500);
+    }
   });
   
   // Auto-scroll thumbnail list
@@ -260,7 +270,7 @@ const Projects: Component = () => {
   const openShareModal = () => {
     const design = selectedDesign();
     if (design) {
-      const url = `${window.location.origin}/design/${design.id}`;
+      const url = `${window.location.origin}/?design=${design.id}`;
       setShareUrl(url);
       setShowShareModal(true);
     }
