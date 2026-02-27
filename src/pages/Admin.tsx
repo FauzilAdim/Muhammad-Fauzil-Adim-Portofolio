@@ -110,16 +110,22 @@ const Admin: Component = () => {
 
       // Upload images
       setMessage(`Uploading ${files.length} images...`);
+      console.log('Starting image upload...');
       const imageUrls = await ProjectService.uploadDesignImages(files);
+      console.log('Images uploaded successfully:', imageUrls);
 
       // Create design project
       setMessage('Creating design project...');
-      await ProjectService.createDesignProject({
+      const projectData = {
         name: designName(),
         cover_image: imageUrls[0], // First image as cover
         images: imageUrls,
         description: designDescription()
-      });
+      };
+      console.log('Attempting to create design project with data:', projectData);
+      
+      const result = await ProjectService.createDesignProject(projectData);
+      console.log('Design project created successfully:', result);
 
       setMessage('✅ Design project created successfully!');
       
@@ -132,7 +138,9 @@ const Admin: Component = () => {
       // Reload projects
       await loadProjects();
     } catch (error: any) {
-      setMessage(`❌ Error: ${error.message}`);
+      console.error('Full error object:', error);
+      console.error('Error details:', JSON.stringify(error, null, 2));
+      setMessage(`❌ Error: ${error.message || 'Unknown error'}`);
     } finally {
       setLoading(false);
     }

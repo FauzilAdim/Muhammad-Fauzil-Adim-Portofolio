@@ -34,12 +34,80 @@ const injectSlideAnimations = () => {
       }
     }
     
+    @keyframes slideUpModal {
+      from {
+        transform: translateY(100%);
+      }
+      to {
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes fadeInBackdrop {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+    
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+    
+    @keyframes fadeInButtons {
+      from {
+        opacity: 0;
+        transform: translateX(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    
+    /* Modal animations */
+    .modal-backdrop {
+      animation: fadeInBackdrop 0.25s ease-out;
+    }
+    
+    .modal-content {
+      animation: slideUpModal 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    /* Action buttons animations */
+    .action-buttons {
+      animation: fadeInButtons 0.4s ease-out 0.3s both;
+    }
+    
+    /* Tooltip slide animation */
+    .tooltip-slide {
+      opacity: 0;
+      transform: translateX(10px) translateY(-50%);
+      transition: all 0.2s ease-out;
+    }
+    
+    .group\/tooltip:hover .tooltip-slide {
+      opacity: 1;
+      transform: translateX(0) translateY(-50%);
+    }
+    
     .animate-slideInRight {
       animation: slideInRight 0.5s ease-out;
     }
     
     .animate-slideInLeft {
       animation: slideInLeft 0.5s ease-out;
+    }
+    
+    .animate-fadeIn {
+      animation: fadeIn 0.3s ease-out;
     }
     
     .scrollbar-hide {
@@ -101,6 +169,9 @@ const Projects: Component = () => {
   const [selectedDesign, setSelectedDesign] = createSignal<DesignProject | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = createSignal(0);
   const [allProjects, setAllProjects] = createSignal<DisplayProject[]>([]);
+  const [showShareModal, setShowShareModal] = createSignal(false);
+  const [shareUrl, setShareUrl] = createSignal('');
+  const [copied, setCopied] = createSignal(false);
   
   let thumbnailContainerRef: HTMLDivElement | undefined;
   
@@ -184,6 +255,58 @@ const Projects: Component = () => {
     setSelectedDesign(null);
     setCurrentImageIndex(0);
     document.body.style.overflow = 'auto';
+  };
+
+  const openShareModal = () => {
+    const design = selectedDesign();
+    if (design) {
+      const url = `${window.location.origin}/design/${design.id}`;
+      setShareUrl(url);
+      setShowShareModal(true);
+    }
+  };
+
+  const closeShareModal = () => {
+    setShowShareModal(false);
+    setCopied(false);
+  };
+
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl());
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
+  const shareToSocial = (platform: 'pinterest' | 'instagram' | 'whatsapp') => {
+    const design = selectedDesign();
+    if (!design) return;
+
+    const url = encodeURIComponent(shareUrl());
+    const text = encodeURIComponent(design.name);
+    const imageUrl = encodeURIComponent(design.cover_image);
+
+    let shareLink = '';
+    switch (platform) {
+      case 'pinterest':
+        shareLink = `https://pinterest.com/pin/create/button/?url=${url}&media=${imageUrl}&description=${text}`;
+        break;
+      case 'whatsapp':
+        shareLink = `https://wa.me/?text=${text}%20${url}`;
+        break;
+      case 'instagram':
+        // Instagram doesn't support direct sharing via URL, so we copy to clipboard
+        copyToClipboard();
+        alert('Link copied! Open Instagram and paste it in your story or post.');
+        return;
+    }
+
+    if (shareLink) {
+      window.open(shareLink, '_blank', 'width=600,height=400');
+    }
   };
 
   const [slideDirection, setSlideDirection] = createSignal<'left' | 'right'>('right');
@@ -337,38 +460,70 @@ const Projects: Component = () => {
             <For each={visibleProjects()}>
             {(project, index) => (
               <>
-                {/* Design Projects - Full Image Layout */}
+                {/* Design Projects - Dribbble Style */}
                 {project.category === 'design' ? (
                   <div
-                    class="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 group animate-slideUp border cursor-pointer"
+                    class="group cursor-pointer animate-slideUp"
                     style={`animation-delay: ${index() * 0.1}s; animation-fill-mode: both;`}
                     onClick={() => handleProjectClick(project)}
                   >
-                    <div class="relative overflow-hidden">
+                    {/* Image Container */}
+                    <div class="relative overflow-hidden rounded-2xl bg-gray-100 shadow-md hover:shadow-xl transition-all duration-300">
                       <img
                         src={project.cover_image}
                         alt={project.name}
-                        class="w-full h-80 object-cover transform group-hover:scale-110 transition-transform duration-700"
+                        class="w-full h-72 object-cover transform group-hover:scale-105 transition-transform duration-500"
                       />
-                      <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center">
-                        <div class="transform scale-0 group-hover:scale-100 transition-transform duration-500 flex flex-col items-center justify-center">
-                          <svg class="w-16 h-16 text-white mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                          </svg>
-                          <p class="text-white text-center font-semibold text-lg">View Details</p>
+                      
+                      {/* Hover Overlay - Gradient 40% */}
+                      <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div class="absolute bottom-0 left-0 right-0 p-6">
+                          {/* Title and Action Icons */}
+                          <div class="flex items-end justify-between gap-4">
+                            <h3 class="text-white text-xl font-medium truncate flex-1">{project.name}</h3>
+                            
+                            {/* Action Icons - Eye and Heart */}
+                            <div class="flex items-center gap-3">
+                              {/* Eye Icon for Views */}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  // Handle view action
+                                }}
+                                class="text-white hover:text-gray-200 transition-colors"
+                              >
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"></path>
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                              </button>
+                              
+                              {/* Heart Icon for Like */}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  // Handle like action
+                                }}
+                                class="text-white hover:text-red-400 transition-colors"
+                              >
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                                </svg>
+                              </button>
+                            </div>
+                          </div>
                         </div>
                       </div>
+                      
+                      {/* Image Count Badge */}
                       <Show when={project.images && project.images.length > 1}>
-                        <div class="absolute top-4 right-4 bg-black/70 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                          {project.images!.length} images
+                        <div class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm text-gray-800 px-3 py-1.5 rounded-lg text-xs font-semibold shadow-lg flex items-center gap-1.5">
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                          </svg>
+                          {project.images!.length}
                         </div>
                       </Show>
-                    </div>
-
-                    <div class="p-6">
-                      <h3 class="text-xl font-bold text-black mb-2">{project.name}</h3>
-                      <p class="text-gray-600 text-sm mb-4">{project.description}</p>
                     </div>
                   </div>
                 ) : (
@@ -443,96 +598,283 @@ const Projects: Component = () => {
         </Show>
       </div>
 
-      {/* Design Image Preview Modal */}
+      {/* Design Image Preview Modal - Dribbble Style with Slide Up */}
       <Show when={selectedDesign()}>
         <div 
-          class="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 animate-fadeIn"
+          class="fixed inset-0 bg-black/60 z-50 flex items-end justify-center modal-backdrop"
           onClick={closeModal}
         >
-          <div class="relative max-w-6xl w-full" onClick={(e) => e.stopPropagation()}>
+          {/* Modal Container - Slides up from bottom */}
+          <div 
+            class="bg-white w-full max-w-7xl rounded-t-3xl shadow-2xl overflow-hidden modal-content"
+            style="max-height: 90vh;"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div class="sticky top-0 bg-white border-b border-gray-200 z-10">
+              <div class="px-6 py-4 flex items-center justify-between">
+                <h2 class="text-xl font-bold text-black">{selectedDesign()!.name}</h2>
+                <button
+                  onClick={closeModal}
+                  class="text-gray-600 hover:text-black transition-colors p-2 hover:bg-gray-100 rounded-lg"
+                >
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Content - Scrollable */}
+            <div class="overflow-y-auto" style="max-height: calc(90vh - 73px);">
+              <div class="px-6 py-8">
+                <div class="grid lg:grid-cols-3 gap-8">
+                  {/* Left: Image Gallery */}
+                  <div class="lg:col-span-2">
+                    <Show when={selectedDesign()!.images && selectedDesign()!.images.length > 0}>
+                      {/* Main Image */}
+                      <div class="bg-gray-50 rounded-2xl overflow-hidden mb-6 shadow-lg relative flex items-center justify-center" style="min-height: 400px; max-height: 600px;">
+                        <img
+                          src={selectedDesign()!.images[currentImageIndex()]}
+                          alt={`${selectedDesign()!.name} - Image ${currentImageIndex() + 1}`}
+                          class="w-full h-auto max-h-[600px] object-contain"
+                        />
+                        
+                        {/* Navigation Arrows */}
+                        <Show when={selectedDesign()!.images.length > 1}>
+                          <button
+                            onClick={prevImage}
+                            class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-900 hover:text-gray-700 transition-colors"
+                          >
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                          </button>
+
+                          <button
+                            onClick={nextImage}
+                            class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-900 hover:text-gray-700 transition-colors"
+                          >
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                          </button>
+                        </Show>
+                      </div>
+
+                      {/* Thumbnail Gallery - Horizontal Scroll */}
+                      <Show when={selectedDesign()!.images.length > 1}>
+                        <div class="relative">
+                          <div 
+                            ref={thumbnailContainerRef}
+                            class="flex gap-3 overflow-x-auto pb-2 scrollbar-hide"
+                          >
+                            <For each={selectedDesign()!.images}>
+                              {(image, idx) => (
+                                <button
+                                  onClick={() => goToImage(idx())}
+                                  class={`flex-shrink-0 rounded-lg overflow-hidden transition-all duration-300 ${
+                                    currentImageIndex() === idx()
+                                      ? 'opacity-100 bg-white shadow-md'
+                                      : 'opacity-40 hover:opacity-70'
+                                  }`}
+                                  style="width: 120px; height: 90px;"
+                                >
+                                  <img
+                                    src={image}
+                                    alt={`Thumbnail ${idx() + 1}`}
+                                    class="w-full h-full object-cover"
+                                  />
+                                </button>
+                              )}
+                            </For>
+                          </div>
+                        </div>
+                      </Show>
+                    </Show>
+                  </div>
+
+                  {/* Right: Info Sidebar */}
+                  <div class="lg:col-span-1">
+                    <div class="lg:sticky lg:top-8">
+                      {/* Description */}
+                      <div class="mb-6">
+                        <h3 class="text-sm font-semibold text-black uppercase tracking-wide mb-3">Description</h3>
+                        <p class="text-black leading-relaxed">{selectedDesign()!.description}</p>
+                      </div>
+
+                      {/* Stats */}
+                      <div class="border-t border-gray-200 pt-6">
+                        <div class="flex items-center gap-2 text-black mb-4">
+                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                          </svg>
+                          <span class="text-base font-semibold">0</span>
+                        </div>
+                        
+                        <div class="flex items-center gap-2 text-black">
+                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                          </svg>
+                          <span class="text-base font-semibold">0</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Floating Action Buttons - Right Side with Arrow Tooltip */}
+          <div 
+            class="fixed right-6 top-1/2 transform -translate-y-1/2 flex flex-col gap-3 z-50 action-buttons"
+          >
+            {/* Like Button - Heroicons Heart */}
+            <div class="relative group">
+              <button 
+                class="bg-white hover:bg-gray-50 p-3 rounded-full shadow-md border border-gray-200 hover:border-gray-300 transition-all duration-200"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <svg class="w-5 h-5 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                </svg>
+              </button>
+              {/* Tooltip with Arrow */}
+              <div class="absolute right-full mr-3 top-1/2 transform -translate-y-1/2 opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200 pointer-events-none">
+                <div class="relative">
+                  <div class="bg-gray-900 text-white text-sm font-medium px-4 py-2 rounded-xl whitespace-nowrap shadow-lg">
+                    Like
+                  </div>
+                  {/* Arrow */}
+                  <div class="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 w-0 h-0 border-t-8 border-t-transparent border-b-8 border-b-transparent border-l-8 border-l-gray-900"></div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Share Button - Heroicons Arrow Up Tray */}
+            <div class="relative group">
+              <button 
+                class="bg-white hover:bg-gray-50 p-3 rounded-full shadow-md border border-gray-200 hover:border-gray-300 transition-all duration-200"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openShareModal();
+                }}
+              >
+                <svg class="w-5 h-5 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                </svg>
+              </button>
+              {/* Tooltip with Arrow */}
+              <div class="absolute right-full mr-3 top-1/2 transform -translate-y-1/2 opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200 pointer-events-none">
+                <div class="relative">
+                  <div class="bg-gray-900 text-white text-sm font-medium px-4 py-2 rounded-xl whitespace-nowrap shadow-lg">
+                    Share
+                  </div>
+                  {/* Arrow */}
+                  <div class="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 w-0 h-0 border-t-8 border-t-transparent border-b-8 border-b-transparent border-l-8 border-l-gray-900"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Show>
+
+      {/* Share Modal */}
+      <Show when={showShareModal()}>
+        <div 
+          class="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4"
+          onClick={closeShareModal}
+        >
+          <div 
+            class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 relative animate-slideUp"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
             <button
-              onClick={closeModal}
-              class="absolute -top-12 right-0 text-white hover:text-gray-300 transition-colors"
+              onClick={closeShareModal}
+              class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
             >
-              <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
               </svg>
             </button>
 
-            <div class="text-center mb-6">
-              <h2 class="text-3xl font-bold text-white mb-2">{selectedDesign()!.name}</h2>
-              <p class="text-gray-300">{selectedDesign()!.description}</p>
+            {/* Logo */}
+            <div class="flex justify-center mb-6">
+              <img src="/Logo.png" alt="Portfolio Logo" class="w-32 h-32 object-contain" />
             </div>
 
-            <div class="relative bg-white rounded-2xl overflow-hidden shadow-2xl">
-              <Show when={selectedDesign()!.images && selectedDesign()!.images.length > 0}>
-                <div class="relative w-full" style="min-height: 400px;">
-                  <div 
-                    class={slideDirection() === 'right' ? 'animate-slideInRight' : 'animate-slideInLeft'}
-                  >
-                    <img
-                      src={selectedDesign()!.images[currentImageIndex()]}
-                      alt={`${selectedDesign()!.name} - Image ${currentImageIndex() + 1}`}
-                      class="w-full h-auto max-h-[70vh] object-contain"
-                    />
-                  </div>
+            {/* Title */}
+            <h3 class="text-2xl font-bold text-center text-gray-900 mb-8">
+              Share this with your social<br />Community
+            </h3>
+
+            {/* Social Media Buttons */}
+            <div class="flex justify-center gap-6 mb-8">
+              {/* Pinterest */}
+              <button
+                onClick={() => shareToSocial('pinterest')}
+                class="w-16 h-16 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
+                title="Share on Pinterest"
+              >
+                <svg class="w-8 h-8 text-red-600" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 0C5.373 0 0 5.372 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738.098.119.112.224.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.631-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12 0-6.628-5.373-12-12-12z"/>
+                </svg>
+              </button>
+
+              {/* X (Twitter) */}
+              <button
+                onClick={() => shareToSocial('instagram')}
+                class="w-16 h-16 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
+                title="Share on X"
+              >
+                <svg class="w-7 h-7 text-gray-900" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                </svg>
+              </button>
+            </div>
+
+            {/* Divider with "or copy link" */}
+            <div class="text-center text-gray-400 text-sm mb-4">
+              or copy link
+            </div>
+
+            {/* Copy URL - Full Width Input with Copy Button Inside */}
+            <div class="relative">
+              <input
+                type="text"
+                value={shareUrl()}
+                readonly
+                class="w-full px-4 py-3 pr-24 bg-gray-100 rounded-xl text-sm text-gray-500 focus:outline-none"
+              />
+              <button
+                onClick={copyToClipboard}
+                class="absolute right-2 top-1/2 transform -translate-y-1/2 px-5 py-2 rounded-lg font-semibold text-sm bg-white text-gray-900 hover:bg-gray-50 shadow-sm transition-all"
+              >
+                Copy
+              </button>
+            </div>
+
+            {/* Toast Notification */}
+            <Show when={copied()}>
+              <div class="absolute bottom-6 inset-x-6 bg-gray-900 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-3 animate-fadeIn">
+                <svg class="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <div class="flex-1">
+                  <div class="font-semibold text-sm">Link Copied</div>
+                  <div class="text-xs text-gray-300">A link to this page has been copied to your clipboard!</div>
                 </div>
-
-                <Show when={selectedDesign()!.images.length > 1}>
-                  <button
-                    onClick={prevImage}
-                    class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/70 hover:bg-black text-white p-3 rounded-full transition-all duration-300 hover:scale-110"
-                  >
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                    </svg>
-                  </button>
-
-                  <button
-                    onClick={nextImage}
-                    class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/70 hover:bg-black text-white p-3 rounded-full transition-all duration-300 hover:scale-110"
-                  >
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                    </svg>
-                  </button>
-
-                  <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-full text-sm font-semibold">
-                    {currentImageIndex() + 1} / {selectedDesign()!.images.length}
-                  </div>
-                </Show>
-              </Show>
-            </div>
-
-            <Show when={selectedDesign()!.images && selectedDesign()!.images.length > 1}>
-              <div class="mt-8 thumbnail-container">
-                <div 
-                  ref={thumbnailContainerRef}
-                  class="flex gap-4 justify-start overflow-x-auto pb-4 px-4 scrollbar-hide"
+                <button
+                  onClick={() => setCopied(false)}
+                  class="text-gray-400 hover:text-white transition-colors flex-shrink-0"
                 >
-                  <For each={selectedDesign()!.images}>
-                    {(image, idx) => (
-                      <button
-                        onClick={() => goToImage(idx())}
-                        class={`flex-shrink-0 rounded-xl overflow-hidden border-3 transition-all duration-300 ${
-                          currentImageIndex() === idx()
-                            ? 'border-white shadow-lg shadow-white/50 scale-110 ring-2 ring-white/50'
-                            : 'border-gray-500 opacity-50 hover:opacity-100 hover:border-white/70 hover:scale-105'
-                        }`}
-                        style="width: 100px; height: 100px;"
-                      >
-                        <img
-                          src={image}
-                          alt={`Thumbnail ${idx() + 1}`}
-                          class="w-full h-full object-cover"
-                        />
-                        <Show when={currentImageIndex() === idx()}>
-                          <div class="absolute inset-0 border-2 border-white rounded-xl pointer-events-none"></div>
-                        </Show>
-                      </button>
-                    )}
-                  </For>
-                </div>
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                </button>
               </div>
             </Show>
           </div>
