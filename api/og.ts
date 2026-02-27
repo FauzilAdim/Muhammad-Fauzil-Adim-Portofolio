@@ -49,18 +49,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://muhammad-fauzil-adim.vercel.app/design/${design}" />
     <meta property="og:title" content="${designData.name} - Muhammad Fauzil Adim" />
-    <meta property="og:description" content="${designData.description}" />
+    <meta property="og:description" content="${designData.description || 'View my design project'}" />
     <meta property="og:image" content="${designData.cover_image}" />
+    <meta property="og:image:secure_url" content="${designData.cover_image}" />
+    <meta property="og:image:type" content="image/jpeg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="${designData.name}" />
     
     <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://muhammad-fauzil-adim.vercel.app/design/${design}" />
-    <meta property="twitter:title" content="${designData.name} - Muhammad Fauzil Adim" />
-    <meta property="twitter:description" content="${designData.description}" />
-    <meta property="twitter:image" content="${designData.cover_image}" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://muhammad-fauzil-adim.vercel.app/design/${design}" />
+    <meta name="twitter:title" content="${designData.name} - Muhammad Fauzil Adim" />
+    <meta name="twitter:description" content="${designData.description || 'View my design project'}" />
+    <meta name="twitter:image" content="${designData.cover_image}" />
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
