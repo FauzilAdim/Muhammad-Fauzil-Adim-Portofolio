@@ -72,6 +72,63 @@ const injectSlideAnimations = () => {
       }
     }
     
+    @keyframes spinToHeart {
+      0% {
+        transform: rotate(0deg) scale(1);
+        opacity: 1;
+      }
+      50% {
+        transform: rotate(180deg) scale(0.8);
+        opacity: 0.8;
+      }
+      100% {
+        transform: rotate(360deg) scale(1);
+        opacity: 0;
+      }
+    }
+    
+    @keyframes heartPop {
+      0% {
+        transform: scale(0);
+        opacity: 0;
+      }
+      50% {
+        transform: scale(1.3);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+    
+    @keyframes heartBounce {
+      0%, 100% {
+        transform: scale(1);
+      }
+      25% {
+        transform: scale(1.2);
+      }
+      50% {
+        transform: scale(0.95);
+      }
+      75% {
+        transform: scale(1.05);
+      }
+    }
+    
+    .spinner-to-heart {
+      animation: spinToHeart 0.6s ease-in-out forwards;
+    }
+    
+    .heart-pop {
+      animation: heartPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+    
+    .heart-bounce {
+      animation: heartBounce 0.6s ease-in-out;
+    }
+    
     /* Modal animations */
     .modal-backdrop {
       animation: fadeInBackdrop 0.25s ease-out;
@@ -172,6 +229,10 @@ const Projects: Component = () => {
   const [showShareModal, setShowShareModal] = createSignal(false);
   const [shareUrl, setShareUrl] = createSignal('');
   const [copied, setCopied] = createSignal(false);
+  const [isLiked, setIsLiked] = createSignal(false);
+  const [likesCount, setLikesCount] = createSignal(0);
+  const [viewsCount, setViewsCount] = createSignal(0);
+  const [isLiking, setIsLiking] = createSignal(false);
   
   let thumbnailContainerRef: HTMLDivElement | undefined;
   
@@ -254,7 +315,20 @@ const Projects: Component = () => {
       if (design) {
         setSelectedDesign(design);
         setCurrentImageIndex(0);
+        setLikesCount(design.likes || 0);
+        setViewsCount(design.views || 0);
         document.body.style.overflow = 'hidden';
+        
+        // Increment view count (fire and forget, don't block UI)
+        ProjectService.incrementView(designId).catch(err => {
+          console.error('Failed to increment view:', err);
+        });
+        setViewsCount(prev => prev + 1);
+        
+        // Check like status (fire and forget)
+        ProjectService.checkLikeStatus(designId)
+          .then(liked => setIsLiked(liked))
+          .catch(err => console.error('Failed to check like status:', err));
       }
     } catch (error) {
       console.error('Error loading design:', error);
@@ -264,6 +338,10 @@ const Projects: Component = () => {
   const closeModal = () => {
     setSelectedDesign(null);
     setCurrentImageIndex(0);
+    setIsLiked(false);
+    setLikesCount(0);
+    setViewsCount(0);
+    setIsLiking(false);
     document.body.style.overflow = 'auto';
   };
 
@@ -281,6 +359,29 @@ const Projects: Component = () => {
   const closeShareModal = () => {
     setShowShareModal(false);
     setCopied(false);
+  };
+
+  const handleLikeToggle = async () => {
+    const design = selectedDesign();
+    if (!design || isLiking()) return;
+
+    setIsLiking(true);
+
+    try {
+      // Simulate loading for smooth animation
+      await new Promise(resolve => setTimeout(resolve, 600));
+
+      const result = await ProjectService.toggleLike(design.id);
+      if (result.success) {
+        setIsLiked(result.liked);
+        setLikesCount(prev => result.liked ? prev + 1 : prev - 1);
+      }
+    } catch (error) {
+      console.error('Error toggling like:', error);
+      // Revert optimistic update if failed
+    } finally {
+      setIsLiking(false);
+    }
   };
 
   const copyToClipboard = async () => {
@@ -722,14 +823,14 @@ const Projects: Component = () => {
                             <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"></path>
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                           </svg>
-                          <span class="text-base font-semibold">0</span>
+                          <span class="text-base font-semibold">{viewsCount()}</span>
                         </div>
                         
                         <div class="flex items-center gap-2 text-black">
                           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
                           </svg>
-                          <span class="text-base font-semibold">0</span>
+                          <span class="text-base font-semibold">{likesCount()}</span>
                         </div>
                       </div>
                     </div>
@@ -743,13 +844,39 @@ const Projects: Component = () => {
           <div 
             class="fixed right-6 top-1/2 transform -translate-y-1/2 flex flex-col gap-3 z-50 action-buttons"
           >
-            {/* Like Button - Heroicons Heart */}
+            {/* Like Button - Heroicons Heart with Animation */}
             <div class="relative group">
               <button 
-                class="bg-white hover:bg-gray-50 p-3 rounded-full shadow-md border border-gray-200 hover:border-gray-300 transition-all duration-200"
-                onClick={(e) => e.stopPropagation()}
+                class={`p-3 rounded-full shadow-md border transition-all duration-200 relative ${
+                  isLiked() 
+                    ? 'bg-red-50 border-red-300 hover:bg-red-100' 
+                    : 'bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                } ${isLiking() ? 'pointer-events-none' : ''}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleLikeToggle();
+                }}
               >
-                <svg class="w-5 h-5 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                {/* Loading Spinner - Red */}
+                <Show when={isLiking()}>
+                  <div class="absolute inset-0 flex items-center justify-center spinner-to-heart">
+                    <svg class="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  </div>
+                </Show>
+
+                {/* Heart Icon */}
+                <svg 
+                  class={`w-5 h-5 transition-all duration-200 ${
+                    isLiked() ? 'text-red-500 fill-red-500 heart-bounce' : 'text-gray-900'
+                  } ${isLiking() ? 'opacity-0' : 'opacity-100'}`} 
+                  fill={isLiked() ? 'currentColor' : 'none'} 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24" 
+                  stroke-width="2"
+                >
                   <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
                 </svg>
               </button>
@@ -757,7 +884,7 @@ const Projects: Component = () => {
               <div class="absolute right-full mr-3 top-1/2 transform -translate-y-1/2 opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200 pointer-events-none">
                 <div class="relative">
                   <div class="bg-gray-900 text-white text-sm font-medium px-4 py-2 rounded-xl whitespace-nowrap shadow-lg">
-                    Like
+                    {isLiking() ? 'Loading...' : isLiked() ? 'Unlike' : 'Like'}
                   </div>
                   {/* Arrow */}
                   <div class="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 w-0 h-0 border-t-8 border-t-transparent border-b-8 border-b-transparent border-l-8 border-l-gray-900"></div>

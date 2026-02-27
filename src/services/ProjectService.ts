@@ -19,6 +19,8 @@ export interface DesignProject {
   cover_image: string;
   images: string[];
   description: string;
+  views?: number;
+  likes?: number;
   created_at?: string;
   updated_at?: string;
 }
@@ -250,5 +252,67 @@ export class ProjectService {
 
   static getAllImageUrls(images: string[]): string[] {
     return images.map(img => this.getImageUrl(img));
+  }
+
+  // ==================== VIEWS & LIKES ====================
+  
+  static async incrementView(designId: string): Promise<void> {
+    try {
+      const response = await fetch('/api/view', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ designId }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to increment view');
+      }
+    } catch (error) {
+      console.error('Error incrementing view:', error);
+      throw error;
+    }
+  }
+
+  static async toggleLike(designId: string): Promise<{ success: boolean; liked: boolean }> {
+    try {
+      const response = await fetch('/api/like', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ designId }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to toggle like');
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error toggling like:', error);
+      throw error;
+    }
+  }
+
+  static async checkLikeStatus(designId: string): Promise<boolean> {
+    try {
+      const response = await fetch(`/api/like-status?designId=${designId}`);
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to check like status');
+      }
+
+      const data = await response.json();
+      return data.liked;
+    } catch (error) {
+      console.error('Error checking like status:', error);
+      throw error;
+    }
   }
 }
