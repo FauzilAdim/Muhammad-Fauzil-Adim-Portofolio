@@ -555,7 +555,7 @@ const Projects: Component = () => {
 
   return (
     <>
-      <section class="py-20">
+      <section id="projects" class="py-20" style="scroll-margin-top: 80px;">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* HEADER */}
         <div class="text-center mb-16 animate-fadeIn">
@@ -643,18 +643,18 @@ const Projects: Component = () => {
               <h3 class="text-2xl font-bold text-black">Design & UI/UX</h3>
             </div>
             <div class="overflow-x-auto scrollbar-hide">
-              <div class="flex gap-8 pl-4 sm:pl-6 lg:pl-8 pb-4">
+              <div class="flex gap-4 pl-2 sm:pl-3 lg:pl-4 pb-4">
                   <For each={allProjects().filter(p => p.category === 'design').slice(0, 5)}>
                     {(design) => (
                       <div
-                        class="flex-shrink-0 w-[600px] cursor-pointer group"
+                        class="flex-shrink-0 cursor-pointer group"
                         onClick={() => openDesignModal(design.id)}
                       >
-                        <div class="relative overflow-hidden rounded-3xl bg-gray-100 shadow-lg hover:shadow-2xl transition-all duration-300">
+                        <div class="relative overflow-hidden rounded-xl bg-gray-100 shadow-lg hover:shadow-2xl transition-all duration-300">
                           <img
                             src={design.cover_image}
                             alt={design.name}
-                            class="w-full h-[500px] object-cover transform group-hover:scale-105 transition-transform duration-500"
+                            class="h-[500px] w-auto object-contain transform group-hover:scale-105 transition-transform duration-500"
                           />
                           
                           {/* Hover Overlay */}
@@ -676,12 +676,12 @@ const Projects: Component = () => {
                   
                   {/* See More Button */}
                   <Show when={allProjects().filter(p => p.category === 'design').length > 5}>
-                    <div class="flex-shrink-0 w-[600px] flex items-center justify-center">
+                    <div class="flex-shrink-0 w-[400px] flex items-center justify-center">
                       <button
                         onClick={() => {
                           alert('Navigate to all designs page - implement routing here');
                         }}
-                        class="flex flex-col items-center justify-center gap-6 w-full h-[500px] rounded-3xl border-2 border-dashed border-gray-300 hover:border-black transition-all duration-300 group"
+                        class="flex flex-col items-center justify-center gap-6 w-full h-[500px] rounded-xl border-2 border-dashed border-gray-300 hover:border-black transition-all duration-300 group"
                       >
                         <div class="w-20 h-20 rounded-full bg-black text-white flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                           <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">

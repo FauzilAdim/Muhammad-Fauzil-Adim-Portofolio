@@ -26,7 +26,7 @@ const LogoMarquee: Component = () => {
           {/* First set of logos */}
           <div class="flex items-center gap-16 px-8">
             {logos.map((logo) => (
-              <div class="flex-shrink-0 flex items-center gap-4 grayscale hover:grayscale-0 transition-all duration-300">
+              <div class="flex-shrink-0 flex items-center gap-4 grayscale hover:grayscale-0 transition-all duration-300 select-none">
                 <svg 
                   class="w-10 h-10 fill-black hover:fill-gray-700 transition-colors duration-300" 
                   viewBox="0 0 24 24"
@@ -42,7 +42,7 @@ const LogoMarquee: Component = () => {
           {/* Duplicate set for seamless loop */}
           <div class="flex items-center gap-16 px-8">
             {logos.map((logo) => (
-              <div class="flex-shrink-0 flex items-center gap-4 grayscale hover:grayscale-0 transition-all duration-300">
+              <div class="flex-shrink-0 flex items-center gap-4 grayscale hover:grayscale-0 transition-all duration-300 select-none">
                 <svg 
                   class="w-10 h-10 fill-black hover:fill-gray-700 transition-colors duration-300" 
                   viewBox="0 0 24 24"
@@ -69,10 +69,6 @@ const LogoMarquee: Component = () => {
         
         .animate-marquee {
           animation: marquee 40s linear infinite;
-        }
-        
-        .animate-marquee:hover {
-          animation-play-state: paused;
         }
       `}</style>
     </div>

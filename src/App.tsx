@@ -6,7 +6,6 @@ import Services from './components/Services';
 import Experience from './components/Experience';
 import Projects from './components/Projects';
 import Footer from './components/Footer';
-import ScrollToTop from './components/ScrollToTop';
 import Admin from './pages/Admin';
 
 const App: Component = () => {
@@ -27,24 +26,23 @@ const App: Component = () => {
     >
       <div class="min-h-screen bg-[#F0F0F0]">
         <Header />
-        <div id="home">
+        <div id="home" style="scroll-margin-top: 80px;">
           <Hero />
         </div>
-        <div id="about">
+        <div id="about" style="scroll-margin-top: 80px;">
           <About />
         </div>
-        <div id="services">
+        <div id="services" style="scroll-margin-top: 80px;">
           <Services />
         </div>
-        <div id="experience">
+        <div id="experience" style="scroll-margin-top: 80px;">
           <Experience />
         </div>
-        <div id="projects">
+        <div id="projects" style="scroll-margin-top: 80px;">
           <Projects />
         </div>
         
         <Footer />
-        <ScrollToTop />
       </div>
     </Show>
   );

@@ -64,7 +64,7 @@ const Header: Component = () => {
   };
 
   return (
-    <header class="fixed top-4 left-0 right-0 z-50 flex justify-center px-4">
+    <header class="fixed top-12 left-0 right-0 z-50 flex justify-center px-4">
       {/* Desktop Dynamic Island */}
       <div 
         class="hidden md:block relative"
