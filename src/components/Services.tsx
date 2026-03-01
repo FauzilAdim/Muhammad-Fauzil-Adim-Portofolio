@@ -1,165 +1,191 @@
 import { Component } from 'solid-js';
-import { Wrench, Atom, Smartphone, Database, Palette } from 'lucide-solid';
 
 const Services: Component = () => {
   
   return (
-    <section class="py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Background Effects */}
-      <div class="absolute inset-0">
-        <div class="absolute top-20 left-10 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-float"></div>
-        <div class="absolute top-40 right-10 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-float" style="animation-delay: 2s"></div>
-        <div class="absolute -bottom-8 left-20 w-72 h-72 bg-yellow-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-float" style="animation-delay: 4s"></div>
-      </div>
+    <section class="py-20 px-10 sm:px-6 lg:px-8" style={{ background: '#F0F0F0' }}>
+      <div class="max-w-7xl mx-auto">
+        {/* Header */}
+        <div class="text-center mb-16 animate-fadeIn">
+          <h2 class="text-4xl md:text-5xl font-bold text-black mb-8">
+            My Skills
+          </h2>
+          <p class="text-gray-700 text-lg max-w-3xl mx-auto">
+            I offer a comprehensive range of cutting-edge technology services to help businesses stay ahead 
+            in the competitive digital landscape.
+          </p>
+        </div>
 
-      <div class="max-w-7xl mx-auto relative z-10">
-        <div class="rounded-3xl p-6 shadow-2xl">
-          {/* Header */}
-          <div class="text-center mb-16 animate-fadeIn">
-            <h2 class="text-4xl md:text-5xl font-bold text-black mb-8">
-              My Skills
-            </h2>
-            <p class="text-black/70 text-lg max-w-3xl mx-auto">
-              I offer a comprehensive range of cutting-edge technology services to help businesses stay ahead 
-              in the competitive digital landscape.
+        {/* Services Grid */}
+        <div class="flex flex-wrap justify-center gap-6 max-w-7xl mx-auto">
+          
+          {/* Backend Development */}
+          <div class="flex flex-col items-start" style={{ width: '220px' }}>
+            <div 
+              class="relative overflow-hidden flex items-center justify-center mb-4"
+              style={{
+                width: '220px',
+                height: '220px',
+                'border-radius': '20px',
+                'background-image': 'url(/gradient-backround/backend-development.png)',
+                'background-size': 'cover',
+                'background-position': 'center'
+              }}
+            >
+              {/* Icon with gradient */}
+              <div class="relative z-10" style={{ width: '80px', height: '80px' }}>
+                <svg width="80" height="80" viewBox="0 0 24 24" fill="none">
+                  <defs>
+                    <linearGradient id="backend-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+                      <stop offset="100%" style="stop-color:#FFB800;stop-opacity:1" />
+                    </linearGradient>
+                  </defs>
+                  <path fill="url(#backend-gradient)" d="M5.507 4.048A3 3 0 0 1 7.785 3h8.43a3 3 0 0 1 2.278 1.048l1.722 2.008A4.533 4.533 0 0 0 19.5 6h-15c-.243 0-.482.02-.715.056l1.722-2.008Z" />
+                  <path fill="url(#backend-gradient)" fill-rule="evenodd" d="M3 9.75a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v.158a3 3 0 0 1-1.5.659V9.75a1.5 1.5 0 0 0-1.5-1.5H6a1.5 1.5 0 0 0-1.5 1.5v.659A3 3 0 0 1 3 9.909V9.75ZM18 12.75h.008v.008H18v-.008Zm-12 0h.008v.008H6v-.008Z" clip-rule="evenodd" />
+                  <path fill="url(#backend-gradient)" d="M3 14.25a3 3 0 0 1 1.5-.659v.659a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5v-.659a3 3 0 0 1 1.5.659v.158a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3v-.158Z" />
+                  <path fill="url(#backend-gradient)" fill-rule="evenodd" d="M3 18.75a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v.158a3 3 0 0 1-1.5.659v-.659a1.5 1.5 0 0 0-1.5-1.5H6a1.5 1.5 0 0 0-1.5 1.5v.659A3 3 0 0 1 3 18.909v-.159ZM18 21.75h.008v.008H18v-.008Zm-12 0h.008v.008H6v-.008Z" clip-rule="evenodd" />
+                </svg>
+              </div>
+            </div>
+            <h3 class="text-[17px] font-bold text-black mb-2 text-left w-full">Backend Development</h3>
+            <p class="text-[13px] text-gray-600 text-left leading-relaxed w-full">
+              Rust, Golang, Java, Node.js
             </p>
           </div>
 
-          {/* Services Grid */}
-          <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            
-            {/* Backend Development */}
-            <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:scale-105 transition-all duration-500 border">
-              <div class="mb-6 bg-gradient-to-br from-blue-200 via-blue-100 to-cyan-100 rounded-2xl p-6 flex justify-center items-center">
-                <Wrench size={48} class="text-blue-600" />
-              </div>
-              <h3 class="text-xl font-bold text-black mb-4 text-center">Backend Development</h3>
-              <p class="text-gray-600 mb-6 text-sm leading-relaxed text-center">
-                Backend and API development with a strong focus on performance, security, and scalable architecture.
-              </p>
-              <div class="flex flex-wrap gap-2 justify-center">
-                <div class="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-full font-medium transition-all duration-300 text-sm">
-                  Rust
-                </div>
-                <div class="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-full font-medium transition-all duration-300 text-sm">
-                  Golang
-                </div>
-                <div class="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-full font-medium transition-all duration-300 text-sm">
-                  Java
-                </div>
-                <div class="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-full font-medium transition-all duration-300 text-sm">
-                  Node.js
-                </div>
-              </div>
-            </div>
-
-            {/* Frontend */}
-            <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:scale-105 transition-all duration-500 border">
-              <div class="mb-6 bg-gradient-to-br from-purple-200 via-purple-100 to-pink-100 rounded-2xl p-6 flex justify-center items-center">
-                <Atom size={48} class="text-purple-600" />
-              </div>
-              <h3 class="text-xl font-bold text-black mb-4 text-center">Frontend Development</h3>
-              <p class="text-gray-600 mb-6 text-sm leading-relaxed text-center">
-                Modern UI/UX design and interactive applications using the latest frameworks.
-              </p>
-              <div class="flex flex-wrap gap-2 justify-center">
-                <div class="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-full font-medium transition-all duration-300 text-sm">
-                  SolidJS
-                </div>
-                <div class="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-full font-medium transition-all duration-300 text-sm">
-                  React.js
-                </div>
-                <div class="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-full font-medium transition-all duration-300 text-sm">
-                  Next.js
-                </div>
-                <div class="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-full font-medium transition-all duration-300 text-sm">
-                  TypeScript
-                </div>
-                <div class="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-full font-medium transition-all duration-300 text-sm">
-                  Tailwind CSS
-                </div>
+          {/* Frontend Development */}
+          <div class="flex flex-col items-start" style={{ width: '220px' }}>
+            <div 
+              class="relative overflow-hidden flex items-center justify-center mb-4"
+              style={{
+                width: '220px',
+                height: '220px',
+                'border-radius': '20px',
+                'background-image': 'url(/gradient-backround/fronetend-development.png)',
+                'background-size': 'cover',
+                'background-position': 'center'
+              }}
+            >
+              {/* Icon with gradient */}
+              <div class="relative z-10" style={{ width: '80px', height: '80px' }}>
+                <svg width="80" height="80" viewBox="0 0 24 24" fill="none">
+                  <defs>
+                    <linearGradient id="frontend-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+                      <stop offset="100%" style="stop-color:#1A00FF;stop-opacity:1" />
+                    </linearGradient>
+                  </defs>
+                  <path fill="url(#frontend-gradient)" fill-rule="evenodd" d="M3 6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6Zm14.25 6a.75.75 0 0 1-.22.53l-2.25 2.25a.75.75 0 1 1-1.06-1.06L15.44 12l-1.72-1.72a.75.75 0 1 1 1.06-1.06l2.25 2.25c.141.14.22.331.22.53Zm-10.28-.53a.75.75 0 0 0 0 1.06l2.25 2.25a.75.75 0 1 0 1.06-1.06L8.56 12l1.72-1.72a.75.75 0 1 0-1.06-1.06l-2.25 2.25Z" clip-rule="evenodd" />
+                </svg>
               </div>
             </div>
-
-            {/* Mobile Developer */}
-            <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:scale-105 transition-all duration-500 border">
-              <div class="mb-6 bg-gradient-to-br from-green-200 via-green-100 to-emerald-100 rounded-2xl p-6 flex justify-center items-center">
-                <Smartphone size={48} class="text-green-600" />
-              </div>
-              <h3 class="text-xl font-bold text-black mb-4 text-center">Mobile Developer</h3>
-              <p class="text-gray-600 mb-6 text-sm leading-relaxed text-center">
-                Native and cross-platform mobile application development for an excellent user experience.
-              </p>
-              <div class="flex flex-wrap gap-2 justify-center">
-                <div class="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-full font-medium transition-all duration-300 text-sm">
-                  Kotlin
-                </div>
-                <div class="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-full font-medium transition-all duration-300 text-sm">
-                  Flutter
-                </div>
-                <div class="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-full font-medium transition-all duration-300 text-sm">
-                  React Native
-                </div>
-              </div>
-            </div>
-
-            {/* Databases */}
-            <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:scale-105 transition-all duration-500 border">
-              <div class="mb-6 bg-gradient-to-br from-orange-200 via-orange-100 to-amber-100 rounded-2xl p-6 flex justify-center items-center">
-                <Database size={48} class="text-orange-600" />
-              </div>
-              <h3 class="text-xl font-bold text-black mb-4 text-center">Databases</h3>
-              <p class="text-gray-600 mb-6 text-sm leading-relaxed text-center">
-                Database design and optimization for applications ranging from small to large scale.
-              </p>
-              <div class="flex flex-wrap gap-2 justify-center">
-                <div class="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-full font-medium transition-all duration-300 text-sm">
-                  PostgreSQL
-                </div>
-                <div class="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-full font-medium transition-all duration-300 text-sm">
-                  MySQL
-                </div>
-                <div class="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-full font-medium transition-all duration-300 text-sm">
-                  MongoDB
-                </div>
-                <div class="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-full font-medium transition-all duration-300 text-sm">
-                  SurrealDB
-                </div>
-              </div>
-            </div>
-
-            {/* Design & Mapping */}
-            <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:scale-105 transition-all duration-500 border">
-              <div class="mb-6 bg-gradient-to-br from-pink-200 via-pink-100 to-rose-100 rounded-2xl p-6 flex justify-center items-center">
-                <Palette size={48} class="text-pink-600" />
-              </div>
-              <h3 class="text-xl font-bold text-black mb-4 text-center">Design & Mapping</h3>
-              <p class="text-gray-600 mb-6 text-sm leading-relaxed text-center">
-                Visual design, mapping, and multimedia production to create engaging product presentations.
-              </p>
-              <div class="flex flex-wrap gap-2 justify-center">
-                <div class="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-full font-medium transition-all duration-300 text-sm">
-                  Figma
-                </div>
-                <div class="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-full font-medium transition-all duration-300 text-sm">
-                  Adobe Illustrator
-                </div>
-                <div class="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-full font-medium transition-all duration-300 text-sm">
-                  Photoshop
-                </div>
-                <div class="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-full font-medium transition-all duration-300 text-sm">
-                  UI/UX Design
-                </div>
-                <div class="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-full font-medium transition-all duration-300 text-sm">
-                  Adobe After Effects
-                </div>
-                <div class="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-full font-medium transition-all duration-300 text-sm">
-                  Adobe Premiere
-                </div>
-              </div>
-            </div>
-
+            <h3 class="text-[17px] font-bold text-black mb-2 text-left w-full">Frontend Development</h3>
+            <p class="text-[13px] text-gray-600 text-left leading-relaxed w-full">
+              SolidJS, React.js, Next.js, TypeScript, Tailwind CSS
+            </p>
           </div>
+
+          {/* Mobile Developer */}
+          <div class="flex flex-col items-start" style={{ width: '220px' }}>
+            <div 
+              class="relative overflow-hidden flex items-center justify-center mb-4"
+              style={{
+                width: '220px',
+                height: '220px',
+                'border-radius': '20px',
+                'background-image': 'url(/gradient-backround/mobile-development.png)',
+                'background-size': 'cover',
+                'background-position': 'center'
+              }}
+            >
+              {/* Icon with gradient */}
+              <div class="relative z-10" style={{ width: '80px', height: '80px' }}>
+                <svg width="80" height="80" viewBox="0 0 24 24" fill="none">
+                  <defs>
+                    <linearGradient id="mobile-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+                      <stop offset="100%" style="stop-color:#FF6B00;stop-opacity:1" />
+                    </linearGradient>
+                  </defs>
+                  <path fill="url(#mobile-gradient)" fill-rule="evenodd" d="M7.5 1.5A1.5 1.5 0 0 0 6 3v18a1.5 1.5 0 0 0 1.5 1.5h9A1.5 1.5 0 0 0 18 21V3a1.5 1.5 0 0 0-1.5-1.5h-9ZM12 18.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clip-rule="evenodd" />
+                </svg>
+              </div>
+            </div>
+            <h3 class="text-[17px] font-bold text-black mb-2 text-left w-full">Mobile Developer</h3>
+            <p class="text-[13px] text-gray-600 text-left leading-relaxed w-full">
+              Kotlin, Flutter, React Native
+            </p>
+          </div>
+
+          {/* Databases */}
+          <div class="flex flex-col items-start" style={{ width: '220px' }}>
+            <div 
+              class="relative overflow-hidden flex items-center justify-center mb-4"
+              style={{
+                width: '220px',
+                height: '220px',
+                'border-radius': '20px',
+                'background-image': 'url(/gradient-backround/databases.png)',
+                'background-size': 'cover',
+                'background-position': 'center'
+              }}
+            >
+              {/* Icon with gradient */}
+              <div class="relative z-10" style={{ width: '80px', height: '80px' }}>
+                <svg width="80" height="80" viewBox="0 0 24 24" fill="none">
+                  <defs>
+                    <linearGradient id="databases-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+                      <stop offset="100%" style="stop-color:#FF0080;stop-opacity:1" />
+                    </linearGradient>
+                  </defs>
+                  <path fill="url(#databases-gradient)" d="M21 6.375c0 2.692-4.03 4.875-9 4.875S3 9.067 3 6.375 7.03 1.5 12 1.5s9 2.183 9 4.875Z" />
+                  <path fill="url(#databases-gradient)" d="M12 12.75c2.685 0 5.19-.586 7.078-1.609a8.283 8.283 0 0 0 1.897-1.384c.016.121.025.244.025.368C21 12.817 16.97 15 12 15s-9-2.183-9-4.875c0-.124.009-.247.025-.368a8.285 8.285 0 0 0 1.897 1.384C6.809 12.164 9.315 12.75 12 12.75Z" />
+                  <path fill="url(#databases-gradient)" d="M12 16.5c2.685 0 5.19-.586 7.078-1.609a8.282 8.282 0 0 0 1.897-1.384c.016.121.025.244.025.368 0 2.692-4.03 4.875-9 4.875s-9-2.183-9-4.875c0-.124.009-.247.025-.368a8.284 8.284 0 0 0 1.897 1.384C6.809 15.914 9.315 16.5 12 16.5Z" />
+                  <path fill="url(#databases-gradient)" d="M12 20.25c2.685 0 5.19-.586 7.078-1.609a8.282 8.282 0 0 0 1.897-1.384c.016.121.025.244.025.368 0 2.692-4.03 4.875-9 4.875s-9-2.183-9-4.875c0-.124.009-.247.025-.368a8.284 8.284 0 0 0 1.897 1.384C6.809 19.664 9.315 20.25 12 20.25Z" />
+                </svg>
+              </div>
+            </div>
+            <h3 class="text-[17px] font-bold text-black mb-2 text-left w-full">Databases</h3>
+            <p class="text-[13px] text-gray-600 text-left leading-relaxed w-full">
+              PostgreSQL, MySQL, MongoDB, SurrealDB
+            </p>
+          </div>
+
+          {/* Design & Mapping */}
+          <div class="flex flex-col items-start" style={{ width: '220px' }}>
+            <div 
+              class="relative overflow-hidden flex items-center justify-center mb-4"
+              style={{
+                width: '220px',
+                height: '220px',
+                'border-radius': '20px',
+                'background-image': 'url(/gradient-backround/design-mapping.png)',
+                'background-size': 'cover',
+                'background-position': 'center'
+              }}
+            >
+              {/* Icon with gradient */}
+              <div class="relative z-10" style={{ width: '80px', height: '80px' }}>
+                <svg width="80" height="80" viewBox="0 0 24 24" fill="none">
+                  <defs>
+                    <linearGradient id="design-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+                      <stop offset="100%" style="stop-color:#FF3D00;stop-opacity:1" />
+                    </linearGradient>
+                  </defs>
+                  <path fill="url(#design-gradient)" fill-rule="evenodd" d="M2.25 4.125c0-1.036.84-1.875 1.875-1.875h5.25c1.036 0 1.875.84 1.875 1.875V17.25a4.5 4.5 0 1 1-9 0V4.125Zm4.5 14.25a1.125 1.125 0 1 0 0-2.25 1.125 1.125 0 0 0 0 2.25Z" clip-rule="evenodd" />
+                  <path fill="url(#design-gradient)" d="M10.719 21.75h9.156c1.036 0 1.875-.84 1.875-1.875v-5.25c0-1.036-.84-1.875-1.875-1.875h-.14l-8.742 8.743c-.09.089-.18.175-.274.257ZM12.738 17.625l6.474-6.474a1.875 1.875 0 0 0 0-2.651L15.5 4.787a1.875 1.875 0 0 0-2.651 0l-.1.099V17.25c0 .126-.003.251-.01.375Z" />
+                </svg>
+              </div>
+            </div>
+            <h3 class="text-[17px] font-bold text-black mb-2 text-left w-full">Design & Mapping</h3>
+            <p class="text-[13px] text-gray-600 text-left leading-relaxed w-full">
+              Figma, Adobe Illustrator, Photoshop, UI/UX Design, After Effects, Premiere
+            </p>
+          </div>
+
         </div>
       </div>
     </section>

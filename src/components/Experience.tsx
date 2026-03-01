@@ -108,16 +108,9 @@ const Experience: Component<SectionProps> = (props) => {
   return (
     <section
       id="experience"
-      class={`py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden ${props.className || ''}`}
+      class={`py-20 px-4 sm:px-6 lg:px-8 ${props.className || ''}`}
     >
-      {/* Background Effects */}
-      <div class="absolute inset-0">
-        <div class="absolute top-20 left-10 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-float"></div>
-        <div class="absolute top-40 right-10 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-float" style="animation-delay: 2s"></div>
-        <div class="absolute -bottom-8 left-20 w-72 h-72 bg-yellow-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-float" style="animation-delay: 4s"></div>
-      </div>
-
-      <div class="max-w-7xl mx-auto relative z-10">
+      <div class="max-w-7xl mx-auto">
         <div class="text-center mb-16 animate-fadeIn">
           <h2 class="text-4xl md:text-5xl font-bold text-black mb-8">
             Experiences

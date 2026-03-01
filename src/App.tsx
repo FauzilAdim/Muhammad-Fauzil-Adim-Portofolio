@@ -25,7 +25,7 @@ const App: Component = () => {
       when={currentPage() === 'home'}
       fallback={<Admin />}
     >
-      <div class="min-h-screen bg-white">
+      <div class="min-h-screen bg-[#F0F0F0]">
         <Header />
         <div id="home">
           <Hero />

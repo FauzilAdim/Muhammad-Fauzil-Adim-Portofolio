@@ -5,14 +5,8 @@ const Footer: Component = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer class="relative bg-gradient-to-br from-gray-50 to-gray-100 py-16 px-4 sm:px-6 lg:px-8 border-t border-gray-200">
-      {/* Background Effects */}
-      <div class="absolute inset-0 overflow-hidden">
-        <div class="absolute -top-10 -left-10 w-72 h-72 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl opacity-10"></div>
-        <div class="absolute -bottom-10 -right-10 w-72 h-72 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl opacity-10"></div>
-      </div>
-
-      <div class="max-w-7xl mx-auto relative z-10">
+    <footer class="py-16 px-4 sm:px-6 lg:px-8 border-t border-gray-300">
+      <div class="max-w-7xl mx-auto">
         <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-8 sm:gap-12 mb-8 sm:mb-12">
           {/* About Section */}
           <div class="animate-slideUp">

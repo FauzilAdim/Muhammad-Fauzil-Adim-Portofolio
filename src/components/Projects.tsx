@@ -1,6 +1,8 @@
 import { Component, For, createSignal, createEffect, Show, onMount } from 'solid-js';
 import { Github, Globe, ChevronDown, ChevronUp } from 'lucide-solid';
 import { ProjectService, type Project, type DesignProject } from '../services/ProjectService';
+import LogoMarquee from './LogoMarquee';
+import DesignShowcase from './DesignShowcase';
 
 // Inject slide animations CSS
 const injectSlideAnimations = () => {
@@ -552,25 +554,21 @@ const Projects: Component = () => {
   };
 
   return (
-    <section class="py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* BACKGROUND EFFECTS */}
-      <div class="absolute inset-0">
-        <div class="absolute top-20 left-10 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-float"></div>
-        <div class="absolute top-40 right-10 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-float" style="animation-delay: 2s"></div>
-        <div class="absolute -bottom-8 left-20 w-72 h-72 bg-yellow-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-float" style="animation-delay: 4s"></div>
-      </div>
-
-      <div class="max-w-7xl mx-auto relative z-10">
+    <>
+      <section class="py-20">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* HEADER */}
         <div class="text-center mb-16 animate-fadeIn">
-          <h2 class="text-4xl md:text-5xl font-bold text-black mb-8">My Projects</h2>
-          <p class="text-black/70 text-lg max-w-3xl mx-auto">
+          <h2 class="text-4xl md:text-5xl font-bold text-black mb-8">
             A collection of projects I've built using modern technologies and industry best practices.
-          </p>
+          </h2>
         </div>
 
-        {/* FILTER BUTTONS */}
-        <div class="flex flex-wrap justify-center gap-3 sm:gap-4 mb-12">
+        {/* LOGO MARQUEE */}
+        <LogoMarquee />
+
+        {/* FILTER BUTTONS - HIDDEN */}
+        <div class="hidden flex-wrap justify-center gap-3 sm:gap-4 mb-12">
           <button
             onClick={() => {
               setSelectedCategory('all');
@@ -633,207 +631,135 @@ const Projects: Component = () => {
           </div>
         </Show>
 
-        {/* PROJECT GRID */}
-        <Show when={!loading()}>
-          <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <For each={visibleProjects()}>
-            {(project, index) => (
-              <>
-                {/* Design Projects - Dribbble Style */}
-                {project.category === 'design' ? (
-                  <div
-                    class="animate-slideUp"
-                    style={`animation-delay: ${index() * 0.1}s; animation-fill-mode: both;`}
-                  >
-                    {/* Image Container - Clickable */}
-                    <div class="group relative overflow-hidden rounded-2xl bg-gray-100 shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer"
-                         onClick={() => handleProjectClick(project)}>
-                      <img
-                        src={project.cover_image}
-                        alt={project.name}
-                        class="w-full h-72 object-cover transform group-hover:scale-105 transition-transform duration-500"
-                      />
-                      
-                      {/* Hover Overlay with Action Buttons */}
-                      <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        {/* Floating Action Buttons - Bottom Right Horizontal */}
-                        <div class="absolute bottom-4 right-4 flex items-center gap-2 action-buttons">
-                          {/* Like Button */}
-                          <div class="relative group/tooltip">
-                            <button 
-                              class={`p-2 rounded-full shadow-md border transition-all duration-200 ${
-                                cardLikeStates()[project.id]
-                                  ? 'bg-red-50 border-red-300 hover:bg-red-100' 
-                                  : 'bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300'
-                              } ${cardLikingStates()[project.id] ? 'pointer-events-none' : ''}`}
-                              onClick={(e) => handleCardLike(e, project.id)}
-                            >
-                              {/* Loading Spinner */}
-                              <Show when={cardLikingStates()[project.id]}>
-                                <div class="absolute inset-0 flex items-center justify-center spinner-to-heart">
-                                  <svg class="w-4 h-4 text-red-500" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                  </svg>
-                                </div>
-                              </Show>
-                              
-                              <svg 
-                                class={`w-4 h-4 transition-all ${
-                                  cardLikeStates()[project.id] ? 'text-red-500 fill-red-500 heart-bounce' : 'text-gray-900'
-                                } ${cardLikingStates()[project.id] ? 'opacity-0' : 'opacity-100'}`} 
-                                fill={cardLikeStates()[project.id] ? 'currentColor' : 'none'} 
-                                stroke="currentColor" 
-                                viewBox="0 0 24 24" 
-                                stroke-width="2"
-                              >
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
-                              </svg>
-                            </button>
-                            {/* Tooltip */}
-                            <div class="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 opacity-0 translate-y-2 group-hover/tooltip:opacity-100 group-hover/tooltip:translate-y-0 transition-all duration-200 pointer-events-none">
-                              <div class="relative">
-                                <div class="bg-gray-900 text-white text-xs font-medium px-3 py-1.5 rounded-lg whitespace-nowrap shadow-lg">
-                                  {cardLikingStates()[project.id] ? 'Loading...' : cardLikeStates()[project.id] ? 'Unlike' : 'Like'}
-                                </div>
-                                {/* Arrow pointing down */}
-                                <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-gray-900"></div>
-                              </div>
-                            </div>
-                          </div>
+      </div>
+      {/* Close max-w-7xl container to allow full-width scroll */}
+
+      {/* DESIGN SHOWCASE & WEB/MOBILE PROJECTS */}
+      <Show when={!loading()}>
+        <>
+          {/* DESIGN SHOWCASE - HORIZONTAL SCROLL - FULL WIDTH */}
+          <div class="mb-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+              <h3 class="text-2xl font-bold text-black">Design & UI/UX</h3>
+            </div>
+            <div class="overflow-x-auto scrollbar-hide">
+              <div class="flex gap-8 pl-4 sm:pl-6 lg:pl-8 pb-4">
+                  <For each={allProjects().filter(p => p.category === 'design').slice(0, 5)}>
+                    {(design) => (
+                      <div
+                        class="flex-shrink-0 w-[600px] cursor-pointer group"
+                        onClick={() => openDesignModal(design.id)}
+                      >
+                        <div class="relative overflow-hidden rounded-3xl bg-gray-100 shadow-lg hover:shadow-2xl transition-all duration-300">
+                          <img
+                            src={design.cover_image}
+                            alt={design.name}
+                            class="w-full h-[500px] object-cover transform group-hover:scale-105 transition-transform duration-500"
+                          />
                           
-                          {/* Share Button */}
-                          <div class="relative group/tooltip">
-                            <button 
-                              class="bg-white hover:bg-gray-50 p-2 rounded-full shadow-md border border-gray-200 hover:border-gray-300 transition-all duration-200"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openDesignModal(project.id);
-                                setTimeout(() => {
-                                  const design = selectedDesign();
-                                  if (design) {
-                                    const url = `${window.location.origin}/design/${design.id}?v=6`;
-                                    setShareUrl(url);
-                                    setShowShareModal(true);
-                                  }
-                                }, 100);
-                              }}
-                            >
-                              <svg class="w-4 h-4 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                          {/* Hover Overlay */}
+                          <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                          
+                          {/* Image Count Badge */}
+                          <Show when={design.images && design.images.length > 1}>
+                            <div class="absolute top-6 right-6 bg-white/90 backdrop-blur-sm text-gray-800 px-4 py-2 rounded-xl text-sm font-semibold shadow-lg flex items-center gap-2">
+                              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                               </svg>
-                            </button>
-                            {/* Tooltip */}
-                            <div class="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 opacity-0 translate-y-2 group-hover/tooltip:opacity-100 group-hover/tooltip:translate-y-0 transition-all duration-200 pointer-events-none">
-                              <div class="relative">
-                                <div class="bg-gray-900 text-white text-xs font-medium px-3 py-1.5 rounded-lg whitespace-nowrap shadow-lg">
-                                  Share
-                                </div>
-                                {/* Arrow pointing down */}
-                                <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-gray-900"></div>
-                              </div>
+                              {design.images!.length}
                             </div>
-                          </div>
+                          </Show>
                         </div>
                       </div>
-                      
-                      {/* Image Count Badge */}
-                      <Show when={project.images && project.images.length > 1}>
-                        <div class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm text-gray-800 px-3 py-1.5 rounded-lg text-xs font-semibold shadow-lg flex items-center gap-1.5">
-                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    )}
+                  </For>
+                  
+                  {/* See More Button */}
+                  <Show when={allProjects().filter(p => p.category === 'design').length > 5}>
+                    <div class="flex-shrink-0 w-[600px] flex items-center justify-center">
+                      <button
+                        onClick={() => {
+                          alert('Navigate to all designs page - implement routing here');
+                        }}
+                        class="flex flex-col items-center justify-center gap-6 w-full h-[500px] rounded-3xl border-2 border-dashed border-gray-300 hover:border-black transition-all duration-300 group"
+                      >
+                        <div class="w-20 h-20 rounded-full bg-black text-white flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                          <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                           </svg>
-                          {project.images!.length}
                         </div>
-                      </Show>
+                        <span class="text-xl font-semibold text-black">See More Designs</span>
+                      </button>
                     </div>
-                    
-                    {/* Info Below Image - Not Clickable */}
-                    <div class="mt-3 flex items-start justify-between gap-3">
-                      <h3 class="text-gray-900 font-medium truncate flex-1 select-text">{project.name}</h3>
-                      
-                      {/* Stats - Only heart is clickable */}
-                      <div class="flex items-center gap-3 flex-shrink-0 text-gray-600 text-sm">
-                        {/* Likes - Clickable */}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleCardLike(e, project.id);
-                          }}
-                          class={`flex items-center gap-1 transition-colors ${
-                            cardLikeStates()[project.id] ? 'text-red-500' : 'text-gray-600 hover:text-red-500'
-                          } ${cardLikingStates()[project.id] ? 'pointer-events-none' : ''}`}
-                        >
-                          <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                          </svg>
-                          <span class="text-xs">{project.likes || 0}</span>
-                        </button>
-                        
-                        {/* Views - Not clickable */}
-                        <div class="flex items-center gap-1 select-none">
-                          <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
-                          </svg>
-                          <span class="text-xs">{project.views || 0}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  /* Web & Mobile Projects - Card with Gradient */
-                  <div
-                    class="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 group animate-slideUp p-3 border cursor-pointer"
-                    style={`animation-delay: ${index() * 0.1}s; animation-fill-mode: both;`}
-                    onClick={() => handleProjectClick(project)}
-                  >
-                    <div class="p-4">
-                      <h3 class="text-xl font-bold text-black mb-3">{project.name}</h3>
+                  </Show>
+                </div>
+              </div>
+            </div>
+            
+            {/* Resume max-w-7xl container for other content */}
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              {/* WEB & MOBILE PROJECTS - GRID */}
+              <div>
+              <Show when={allProjects().filter(p => p.category !== 'design').length > 0}>
+                <h3 class="text-2xl font-bold text-black mb-8">Web & Mobile Development</h3>
+              </Show>
+              <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <For each={allProjects().filter(p => p.category !== 'design')}>
+                  {(project, index) => (
+                    <div
+                      class="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 group animate-slideUp p-3 border cursor-pointer"
+                      style={`animation-delay: ${index() * 0.1}s; animation-fill-mode: both;`}
+                      onClick={() => handleProjectClick(project)}
+                    >
+                      <div class="p-4">
+                        <h3 class="text-xl font-bold text-black mb-3">{project.name}</h3>
 
-                      <Show when={project.stack && project.stack.length > 0}>
-                        <div class="flex flex-wrap gap-2 mb-4">
-                          <For each={project.stack}>
-                            {(tech) => (
-                              <span class="px-3 py-1 bg-black text-white text-xs font-semibold rounded-full">
-                                {tech}
-                              </span>
-                            )}
-                          </For>
-                        </div>
-                      </Show>
-                    </div>
-
-                    <div class={`relative p-2 bg-gradient-to-br rounded-2xl ${getGradientColor(project.category)}`}>
-                      <div class="bg-white rounded-2xl overflow-hidden shadow-xl">
-                        <img
-                          src={project.cover_image}
-                          alt={project.name}
-                          class="w-full h-52 object-cover transform group-hover:scale-105 transition-transform duration-500"
-                        />
-                      </div>
-                    </div>
-
-                    <div class="p-6">
-                      <p class="text-gray-600 text-sm mb-4">{project.description}</p>
-                      <div class="flex items-center gap-4 pt-4 border-t border-gray-100">
-                        <Show when={project.link_portfolio}>
-                          <div class="flex items-center gap-2 text-gray-700 hover:text-black font-medium text-sm transition-colors duration-300">
-                            <Globe size={18} />
-                            View Live
+                        <Show when={project.stack && project.stack.length > 0}>
+                          <div class="flex flex-wrap gap-2 mb-4">
+                            <For each={project.stack}>
+                              {(tech) => (
+                                <span class="px-3 py-1 bg-black text-white text-xs font-semibold rounded-full">
+                                  {tech}
+                                </span>
+                              )}
+                            </For>
                           </div>
                         </Show>
                       </div>
+
+                      <div class={`relative p-2 bg-gradient-to-br rounded-2xl ${getGradientColor(project.category)}`}>
+                        <div class="bg-white rounded-2xl overflow-hidden shadow-xl">
+                          <img
+                            src={project.cover_image}
+                            alt={project.name}
+                            class="w-full h-52 object-cover transform group-hover:scale-105 transition-transform duration-500"
+                          />
+                        </div>
+                      </div>
+
+                      <div class="p-6">
+                        <p class="text-gray-600 text-sm mb-4">{project.description}</p>
+                        <div class="flex items-center gap-4 pt-4 border-t border-gray-100">
+                          <Show when={project.link_portfolio}>
+                            <div class="flex items-center gap-2 text-gray-700 hover:text-black font-medium text-sm transition-colors duration-300">
+                              <Globe size={18} />
+                              View Live
+                            </div>
+                          </Show>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </>
-            )}
-            </For>
-          </div>
+                  )}
+                </For>
+              </div>
+            </div>
+            </div>
+            {/* Close max-w-7xl container */}
+          </>
         </Show>
 
         {!loading() && filteredProjects().length > 6 && (
-          <div class="mt-16 text-center animate-slideUp">
+          <div class="mt-16 text-center animate-slideUp px-4 sm:px-6 lg:px-8">
             <button
               onClick={() => setShowAll(!showAll())}
               class="inline-flex items-center gap-2 px-6 py-3 bg-black text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
@@ -846,13 +772,12 @@ const Projects: Component = () => {
 
         {/* Empty State */}
         <Show when={!loading() && filteredProjects().length === 0}>
-          <div class="text-center py-12">
+          <div class="text-center py-12 px-4 sm:px-6 lg:px-8">
             <p class="text-gray-600 text-lg">No projects found in this category.</p>
           </div>
         </Show>
-      </div>
+      </section>
 
-      {/* Design Image Preview Modal - Dribbble Style with Slide Up */}
       <Show when={selectedDesign()}>
         <div 
           class="fixed inset-0 bg-black/60 z-50 flex items-end justify-center modal-backdrop"
@@ -1165,7 +1090,7 @@ const Projects: Component = () => {
           </div>
         </div>
       </Show>
-    </section>
+    </>
   );
 };
 
