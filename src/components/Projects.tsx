@@ -225,7 +225,7 @@ type DisplayProject = {
 
 const Projects: Component = () => {
   const [showAll, setShowAll] = createSignal(false);
-  const [selectedCategory, setSelectedCategory] = createSignal<'all' | 'web' | 'mobile' | 'design'>('all');
+  const [selectedCategory, setSelectedCategory] = createSignal<'all' | 'web' | 'mobile' | 'design'>('design');
   const [loading, setLoading] = createSignal(true);
   const [selectedDesign, setSelectedDesign] = createSignal<DesignProject | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = createSignal(0);
@@ -555,7 +555,7 @@ const Projects: Component = () => {
 
   return (
     <>
-      <section id="projects" class="py-20" style="scroll-margin-top: 80px;">
+      <section class="pt-32 pb-20">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* HEADER */}
         <div class="text-center mb-16 animate-fadeIn">
@@ -637,74 +637,89 @@ const Projects: Component = () => {
       {/* DESIGN SHOWCASE & WEB/MOBILE PROJECTS */}
       <Show when={!loading()}>
         <>
-          {/* DESIGN SHOWCASE - HORIZONTAL SCROLL - FULL WIDTH */}
-          <div class="mb-20">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
-              <h3 class="text-2xl font-bold text-black">Design & UI/UX</h3>
+          {/* TAB HEADERS */}
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+            <div class="flex items-center gap-8">
+              <button
+                onClick={() => setSelectedCategory('design')}
+                class={`text-2xl font-bold transition-all duration-200 ${
+                  selectedCategory() === 'design' ? 'text-black' : 'text-gray-400 hover:text-gray-600'
+                }`}
+              >
+                Design & UI/UX
+              </button>
+              <button
+                onClick={() => setSelectedCategory('web')}
+                class={`text-2xl font-bold transition-all duration-200 ${
+                  selectedCategory() === 'web' ? 'text-black' : 'text-gray-400 hover:text-gray-600'
+                }`}
+              >
+                Web Dev
+              </button>
+              <button
+                onClick={() => setSelectedCategory('mobile')}
+                class={`text-2xl font-bold transition-all duration-200 ${
+                  selectedCategory() === 'mobile' ? 'text-black' : 'text-gray-400 hover:text-gray-600'
+                }`}
+              >
+                Mobile Dev
+              </button>
             </div>
-            <div class="overflow-x-auto scrollbar-hide">
+          </div>
+
+          {/* DESIGN TAB - HORIZONTAL SCROLL */}
+          <Show when={selectedCategory() === 'design'}>
+            <div class="overflow-x-auto scrollbar-hide mb-20">
               <div class="flex gap-4 pl-2 sm:pl-3 lg:pl-4 pb-4">
-                  <For each={allProjects().filter(p => p.category === 'design').slice(0, 5)}>
-                    {(design) => (
-                      <div
-                        class="flex-shrink-0 cursor-pointer group"
-                        onClick={() => openDesignModal(design.id)}
-                      >
-                        <div class="relative overflow-hidden rounded-xl bg-gray-100 shadow-lg hover:shadow-2xl transition-all duration-300">
-                          <img
-                            src={design.cover_image}
-                            alt={design.name}
-                            class="h-[500px] w-auto object-contain transform group-hover:scale-105 transition-transform duration-500"
-                          />
-                          
-                          {/* Hover Overlay */}
-                          <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                          
-                          {/* Image Count Badge */}
-                          <Show when={design.images && design.images.length > 1}>
-                            <div class="absolute top-6 right-6 bg-white/90 backdrop-blur-sm text-gray-800 px-4 py-2 rounded-xl text-sm font-semibold shadow-lg flex items-center gap-2">
-                              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                              </svg>
-                              {design.images!.length}
-                            </div>
-                          </Show>
-                        </div>
+                <For each={allProjects().filter(p => p.category === 'design').slice(0, 5)}>
+                  {(design) => (
+                    <div
+                      class="flex-shrink-0 cursor-pointer group"
+                      onClick={() => openDesignModal(design.id)}
+                    >
+                      <div class="relative overflow-hidden rounded-xl bg-gray-100 shadow-lg hover:shadow-2xl transition-all duration-300">
+                        <img
+                          src={design.cover_image}
+                          alt={design.name}
+                          class="h-[320px] sm:h-[420px] md:h-[500px] w-auto object-contain transform group-hover:scale-105 transition-transform duration-500"
+                        />
+                        <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <Show when={design.images && design.images.length > 1}>
+                          <div class="absolute top-6 right-6 bg-white/90 backdrop-blur-sm text-gray-800 px-4 py-2 rounded-xl text-sm font-semibold shadow-lg flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            {design.images!.length}
+                          </div>
+                        </Show>
                       </div>
-                    )}
-                  </For>
-                  
-                  {/* See More Button */}
-                  <Show when={allProjects().filter(p => p.category === 'design').length > 5}>
-                    <div class="flex-shrink-0 w-[400px] flex items-center justify-center">
-                      <button
-                        onClick={() => {
-                          alert('Navigate to all designs page - implement routing here');
-                        }}
-                        class="flex flex-col items-center justify-center gap-6 w-full h-[500px] rounded-xl border-2 border-dashed border-gray-300 hover:border-black transition-all duration-300 group"
-                      >
-                        <div class="w-20 h-20 rounded-full bg-black text-white flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                          <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                          </svg>
-                        </div>
-                        <span class="text-xl font-semibold text-black">See More Designs</span>
-                      </button>
                     </div>
-                  </Show>
-                </div>
+                  )}
+                </For>
+                <Show when={allProjects().filter(p => p.category === 'design').length > 5}>
+                  <div class="flex-shrink-0 w-[260px] sm:w-[320px] md:w-[400px] flex items-center justify-center">
+                    <button
+                      onClick={() => alert('Navigate to all designs page')}
+                      class="flex flex-col items-center justify-center gap-6 w-full h-[320px] sm:h-[420px] md:h-[500px] rounded-xl border-2 border-dashed border-gray-300 hover:border-black transition-all duration-300 group"
+                    >
+                      <div class="w-20 h-20 rounded-full bg-black text-white flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                      </div>
+                      <span class="text-xl font-semibold text-black">See More Designs</span>
+                    </button>
+                  </div>
+                </Show>
               </div>
             </div>
-            
-            {/* Resume max-w-7xl container for other content */}
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              {/* WEB & MOBILE PROJECTS - GRID */}
-              <div>
-              <Show when={allProjects().filter(p => p.category !== 'design').length > 0}>
-                <h3 class="text-2xl font-bold text-black mb-8">Web & Mobile Development</h3>
-              </Show>
+          </Show>
+
+          {/* WEB / MOBILE TAB - GRID */}
+          <Show when={selectedCategory() === 'web' || selectedCategory() === 'mobile'}>
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-20">
               <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <For each={allProjects().filter(p => p.category !== 'design')}>
+                <For each={allProjects().filter(p => p.category === selectedCategory())}>
                   {(project, index) => (
                     <div
                       class="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 group animate-slideUp p-3 border cursor-pointer"
@@ -713,20 +728,16 @@ const Projects: Component = () => {
                     >
                       <div class="p-4">
                         <h3 class="text-xl font-bold text-black mb-3">{project.name}</h3>
-
                         <Show when={project.stack && project.stack.length > 0}>
                           <div class="flex flex-wrap gap-2 mb-4">
                             <For each={project.stack}>
                               {(tech) => (
-                                <span class="px-3 py-1 bg-black text-white text-xs font-semibold rounded-full">
-                                  {tech}
-                                </span>
+                                <span class="px-3 py-1 bg-black text-white text-xs font-semibold rounded-full">{tech}</span>
                               )}
                             </For>
                           </div>
                         </Show>
                       </div>
-
                       <div class={`relative p-2 bg-gradient-to-br rounded-2xl ${getGradientColor(project.category)}`}>
                         <div class="bg-white rounded-2xl overflow-hidden shadow-xl">
                           <img
@@ -736,7 +747,6 @@ const Projects: Component = () => {
                           />
                         </div>
                       </div>
-
                       <div class="p-6">
                         <p class="text-gray-600 text-sm mb-4">{project.description}</p>
                         <div class="flex items-center gap-4 pt-4 border-t border-gray-100">
@@ -753,30 +763,10 @@ const Projects: Component = () => {
                 </For>
               </div>
             </div>
-            </div>
-            {/* Close max-w-7xl container */}
-          </>
-        </Show>
-
-        {!loading() && filteredProjects().length > 6 && (
-          <div class="mt-16 text-center animate-slideUp px-4 sm:px-6 lg:px-8">
-            <button
-              onClick={() => setShowAll(!showAll())}
-              class="inline-flex items-center gap-2 px-6 py-3 bg-black text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-            >
-              {showAll() ? 'Show Less' : 'Show More'}
-              {showAll() ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-            </button>
-          </div>
-        )}
-
-        {/* Empty State */}
-        <Show when={!loading() && filteredProjects().length === 0}>
-          <div class="text-center py-12 px-4 sm:px-6 lg:px-8">
-            <p class="text-gray-600 text-lg">No projects found in this category.</p>
-          </div>
-        </Show>
-      </section>
+          </Show>
+        </>
+      </Show>
+    </section>
 
       <Show when={selectedDesign()}>
         <div 

@@ -1,23 +1,143 @@
-import { Component, createSignal, onMount } from 'solid-js';
+import { Component, createSignal, onMount, onCleanup } from 'solid-js';
 
 const Header: Component = () => {
-  const [isExpanded, setIsExpanded] = createSignal(false);
-  const [isLocked, setIsLocked] = createSignal(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = createSignal(false);
   const [activeSection, setActiveSection] = createSignal('home');
+  let navbarRef!: HTMLDivElement;
+  let canvasRef!: HTMLCanvasElement;
 
-  // Track active section based on scroll
   onMount(() => {
-    const handleScroll = () => {
+    const canvas = canvasRef;
+    const navbar = navbarRef;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let progress = 0;
+    let targetPct = 0;
+    let W = 0;
+    let H = 0;
+    let isDestroyed = false;
+
+    function resize() {
+      if (isDestroyed) return;
+      W = navbar.offsetWidth;
+      H = navbar.offsetHeight;
+      canvas.width = W;
+      canvas.height = H;
+    }
+    resize();
+
+    window.addEventListener('resize', resize);
+
+    const waves = [
+      { amp: 2.2, freq: 0.18, speed: 1.4, phase: 0.0 },
+      { amp: 1.3, freq: 0.35, speed: 2.1, phase: 1.1 },
+      { amp: 0.7, freq: 0.60, speed: 3.0, phase: 2.3 },
+    ];
+
+    function waveX(y: number, t: number) {
+      let x = 0;
+      waves.forEach(w => {
+        x += w.amp * Math.sin(w.freq * y + w.speed * t + w.phase);
+      });
+      return x;
+    }
+
+    let animationFrameId: number;
+
+    function draw(ts: number) {
+      if (isDestroyed) return;
+      const t = ts / 1000;
+      ctx!.clearRect(0, 0, W, H);
+
+      progress += (targetPct - progress) * 0.07;
+      const fillX = (progress / 100) * W;
+
+      if (fillX >= 0.5) {
+        const R = H / 2;
+        const steps = 52;
+
+        // Clip to pill shape (ensures rounded corners on progress fill)
+        ctx!.save();
+        ctx!.beginPath();
+        ctx!.roundRect(0, 0, W, H, R);
+        ctx!.clip();
+
+        // Build fill path with liquid right edge
+        ctx!.beginPath();
+        ctx!.moveTo(0, 0);
+        ctx!.lineTo(fillX + waveX(0, t), 0);
+        for (let i = 1; i <= steps; i++) {
+          const y = (i / steps) * H;
+          ctx!.lineTo(fillX + waveX(y, t), y);
+        }
+        ctx!.lineTo(0, H);
+        ctx!.closePath();
+
+        // Solid green fill (#AAEE00)
+        ctx!.fillStyle = '#AAEE00';
+        ctx!.fill();
+
+        // Shimmer sweep
+        const sp = (t * 0.35) % 1.8;
+        if (sp < 1) {
+          const sx = sp * fillX;
+          const sg = ctx!.createLinearGradient(sx - 50, 0, sx + 50, 0);
+          sg.addColorStop(0, 'rgba(255, 255, 255, 0)');
+          sg.addColorStop(0.5, 'rgba(255, 255, 255, 0.08)');
+          sg.addColorStop(1, 'rgba(255, 255, 255, 0)');
+          ctx!.fillStyle = sg;
+          ctx!.fillRect(0, 0, fillX, H);
+        }
+
+        ctx!.restore();
+
+        // Liquid edge glow (outside clip so it sits on border) - neon green glow
+        ctx!.save();
+        ctx!.beginPath();
+        ctx!.moveTo(fillX + waveX(0, t), 0);
+        for (let i = 1; i <= steps; i++) {
+          const y = (i / steps) * H;
+          ctx!.lineTo(fillX + waveX(y, t), y);
+        }
+        ctx!.strokeStyle = 'rgba(170, 238, 0, 0.8)';
+        ctx!.lineWidth = 1.5;
+        ctx!.shadowColor = '#AAEE00';
+        ctx!.shadowBlur = 10;
+        ctx!.stroke();
+        ctx!.restore();
+      }
+
+      // Dynamically check which links are covered by the progress fill
+      const navbarRect = navbar.getBoundingClientRect();
+      const links = navbar.querySelectorAll('.nav-links a');
+      links.forEach((link) => {
+        const linkRect = link.getBoundingClientRect();
+        const linkMidRel = (linkRect.left + linkRect.width / 2) - navbarRect.left;
+        if (fillX >= linkMidRel) {
+          link.classList.add('covered');
+        } else {
+          link.classList.remove('covered');
+        }
+      });
+
+      animationFrameId = requestAnimationFrame(draw);
+    }
+
+    const handleScrollProgress = () => {
+      if (isDestroyed) return;
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      targetPct = max > 0 ? (window.scrollY / max) * 100 : 0;
+
+      // Section tracking based on scroll
       const sections = ['home', 'about', 'services', 'experience', 'projects'];
-      const scrollPosition = window.scrollY + 100;
+      const scrollPosition = window.scrollY + 120;
 
       for (const section of sections) {
         const element = document.getElementById(section);
         if (element) {
           const offsetTop = element.offsetTop;
           const offsetBottom = offsetTop + element.offsetHeight;
-          
+
           if (scrollPosition >= offsetTop && scrollPosition < offsetBottom) {
             setActiveSection(section);
             break;
@@ -26,253 +146,237 @@ const Header: Component = () => {
       }
     };
 
-    window.addEventListener('scroll', handleScroll);
-    handleScroll();
+    window.addEventListener('scroll', handleScrollProgress);
+    handleScrollProgress(); // Initial check
 
-    return () => window.removeEventListener('scroll', handleScroll);
+    animationFrameId = requestAnimationFrame(draw);
+
+    onCleanup(() => {
+      isDestroyed = true;
+      window.removeEventListener('resize', resize);
+      window.removeEventListener('scroll', handleScrollProgress);
+      cancelAnimationFrame(animationFrameId);
+    });
   });
-
-  const handleLogoClick = (e: MouseEvent) => {
-    e.preventDefault();
-    if (isLocked()) {
-      // Collapse when clicking logo while expanded
-      setIsLocked(false);
-      setIsExpanded(false);
-    } else {
-      // Navigate to home
-      window.location.hash = '#home';
-      setActiveSection('home');
-    }
-  };
 
   const handleNavClick = (section: string) => {
     setActiveSection(section);
-    setIsLocked(true); // Lock expanded state when clicking menu
-    setIsMobileMenuOpen(false);
-  };
-
-  const handleMouseEnter = () => {
-    if (!isLocked()) {
-      setIsExpanded(true);
-    }
-  };
-
-  const handleMouseLeave = () => {
-    if (!isLocked()) {
-      setIsExpanded(false);
-    }
   };
 
   return (
-    <header class="fixed top-12 left-0 right-0 z-50 flex justify-center px-4">
-      {/* Desktop Dynamic Island */}
-      <div 
-        class="hidden md:block relative"
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-      >
-        <nav 
-          class="bg-black rounded-full shadow-2xl relative overflow-hidden"
-          style={{
-            width: isExpanded() || isLocked() ? '580px' : '56px',
-            height: '56px',
-            padding: isExpanded() || isLocked() ? '8px 16px' : '0',
-            transition: isExpanded() || isLocked()
-              ? 'all 0.7s ease-in-out'
-              : 'all 0.5s ease-in-out'
-          }}
-        >
-          <div class="flex items-center h-full relative">
-            {/* Logo - Bergeser ke kiri saat expand */}
-            <button
-              onClick={handleLogoClick}
-              class="absolute flex items-center justify-center rounded-full transition-all duration-700 ease-in-out flex-shrink-0"
-              style={{
-                width: isExpanded() || isLocked() ? '40px' : '56px',
-                height: isExpanded() || isLocked() ? '40px' : '56px',
-                left: isExpanded() || isLocked() ? '8px' : '0',
-                top: '50%',
-                transform: 'translateY(-50%)'
-              }}
-            >
-              <img 
-                src="/Logo-svg.svg" 
-                alt="Logo" 
-                class="transition-all duration-700 ease-in-out"
-                style={{
-                  width: isExpanded() || isLocked() ? '20px' : '28px',
-                  height: isExpanded() || isLocked() ? '20px' : '28px'
-                }}
-              />
-            </button>
+    <>
+      <style>{`
+        /* ── Navbar outer shell — glass base ─────────── */
+        .navbar {
+          position: fixed;
+          top: 24px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: clamp(340px, 92vw, 860px);
+          height: 64px;
+          border-radius: 999px;
+          z-index: 999;
+        }
 
-            {/* Menu Items - Muncul dari kanan (dari dalam logo) */}
-            <div 
-              class="absolute flex items-center gap-1 whitespace-nowrap"
-              style={{
-                left: '64px',
-                opacity: isExpanded() || isLocked() ? '1' : '0',
-                transform: isExpanded() || isLocked() ? 'translateX(0)' : 'translateX(-80px)',
-                'pointer-events': isExpanded() || isLocked() ? 'auto' : 'none',
-                transition: isExpanded() || isLocked() 
-                  ? 'opacity 0.3s ease-in-out 0.2s, transform 0.7s ease-in-out' 
-                  : 'opacity 0.2s ease-in-out, transform 0.5s ease-in-out'
-              }}
-            >
-              <a 
-                href="#home"
-                onClick={() => handleNavClick('home')}
-                class={`px-4 py-1.5 rounded-full text-sm transition-colors duration-300 ${
-                  activeSection() === 'home' 
-                    ? 'bg-[#AAEE00] text-black' 
-                    : 'text-white hover:text-[#AAEE00]'
-                }`}
-              >
-                Home
-              </a>
-              <a 
-                href="#about"
-                onClick={() => handleNavClick('about')}
-                class={`px-4 py-1.5 rounded-full text-sm transition-colors duration-300 ${
-                  activeSection() === 'about' 
-                    ? 'bg-[#AAEE00] text-black' 
-                    : 'text-white hover:text-[#AAEE00]'
-                }`}
-              >
-                About
-              </a>
-              <a 
-                href="#services"
-                onClick={() => handleNavClick('services')}
-                class={`px-4 py-1.5 rounded-full text-sm transition-colors duration-300 ${
-                  activeSection() === 'services' 
-                    ? 'bg-[#AAEE00] text-black' 
-                    : 'text-white hover:text-[#AAEE00]'
-                }`}
-              >
-                Services
-              </a>
-              <a 
-                href="#experience"
-                onClick={() => handleNavClick('experience')}
-                class={`px-4 py-1.5 rounded-full text-sm transition-colors duration-300 ${
-                  activeSection() === 'experience' 
-                    ? 'bg-[#AAEE00] text-black' 
-                    : 'text-white hover:text-[#AAEE00]'
-                }`}
-              >
-                Experience
-              </a>
-              <a 
-                href="#projects"
-                onClick={() => handleNavClick('projects')}
-                class={`px-4 py-1.5 rounded-full text-sm transition-colors duration-300 ${
-                  activeSection() === 'projects' 
-                    ? 'bg-[#AAEE00] text-black' 
-                    : 'text-white hover:text-[#AAEE00]'
-                }`}
-              >
-                Projects
-              </a>
-            </div>
-          </div>
-        </nav>
-      </div>
+        /* Layer 1: dark frosted glass background (always visible, full width) */
+        .navbar-glass {
+          position: absolute;
+          inset: 0;
+          border-radius: 999px;
+          background: rgba(15, 23, 42, 0.28);
+          backdrop-filter: blur(28px) saturate(160%);
+          -webkit-backdrop-filter: blur(28px) saturate(160%);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          z-index: 1;
+        }
 
-      {/* Mobile Navigation */}
-      <div class="md:hidden w-full max-w-sm">
-        <div class="flex items-center justify-between bg-black rounded-full px-5 py-2.5 shadow-2xl">
-          {/* Logo */}
-          <a href="#home" class="flex items-center">
-            <img 
-              src="/Logo-svg.svg" 
-              alt="Logo" 
-              class="w-7 h-7"
-            />
+        /* Subtle inner highlight on top edge */
+        .navbar-glass::before {
+          content: '';
+          position: absolute;
+          top: 0; left: 10%; right: 10%;
+          height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.20), transparent);
+          border-radius: 999px;
+        }
+
+        /* Layer 2: progress canvas (fills over the glass) */
+        .progress-canvas {
+          position: absolute;
+          inset: 0;
+          border-radius: 999px;
+          width: 100%;
+          height: 100%;
+          pointer-events: none;
+          z-index: 2;
+        }
+
+        /* Layer 3: content sits on top of both */
+        .nav-inner {
+          position: relative;
+          z-index: 3;
+          height: 64px;
+          display: grid;
+          grid-template-columns: 1fr auto 1fr;
+          align-items: center;
+          padding: 0 24px;
+          gap: 0;
+        }
+
+        /* Logo image wrapper - hidden on home, fades & slides in on scroll */
+        .nav-logo {
+          display: flex;
+          align-items: center;
+          text-decoration: none;
+          transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          opacity: 0;
+          pointer-events: none;
+          transform: translateY(-8px);
+        }
+
+        .nav-logo.visible {
+          opacity: 1;
+          pointer-events: auto;
+          transform: translateY(0);
+        }
+
+        .logo-img {
+          height: 36px;
+          width: auto;
+          display: block;
+          object-fit: contain;
+        }
+
+        /* Nav links */
+        .nav-links {
+          display: flex; align-items: center; gap: 4px;
+        }
+
+        /* Default link style - all links have a rounded pill shape */
+        .nav-links a {
+          display: flex; align-items: center;
+          color: rgba(255, 255, 255, 0.65);
+          text-decoration: none;
+          font-size: 13px; font-weight: 500;
+          letter-spacing: 0.01em;
+          padding: 6px 14px;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.05); /* Default pill background */
+          border: 1px solid rgba(255, 255, 255, 0.08); /* Default pill border */
+          transition: color 0.15s, background 0.15s, border-color 0.15s;
+          white-space: nowrap;
+        }
+
+        /* Hover styles */
+        .nav-links a:hover {
+          color: #ffffff;
+          background: rgba(255, 255, 255, 0.12);
+          border-color: rgba(255, 255, 255, 0.18);
+        }
+
+        /* Active tab style - slightly highlighted white frosted look */
+        .nav-links a.active {
+          color: #ffffff;
+          background: rgba(255, 255, 255, 0.16);
+          border-color: rgba(255, 255, 255, 0.26);
+          box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
+          font-weight: 600;
+        }
+
+        /* Covered by neon green: turns black text and black border/fill for perfect contrast and visibility */
+        .nav-links a.covered {
+          color: #000000 !important;
+          background: rgba(0, 0, 0, 0.06) !important;
+          border-color: rgba(0, 0, 0, 0.12) !important;
+        }
+
+        .nav-links a.covered:hover {
+          color: #000000 !important;
+          background: rgba(0, 0, 0, 0.12) !important;
+          border-color: rgba(0, 0, 0, 0.20) !important;
+        }
+
+        .nav-links a.covered.active {
+          background: rgba(0, 0, 0, 0.15) !important;
+          border-color: rgba(0, 0, 0, 0.25) !important;
+          box-shadow: none;
+        }
+
+        /* Right - hidden on home, fades & slides in on scroll */
+        .nav-right {
+          display: flex; align-items: center; justify-content: flex-end;
+          transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          opacity: 0;
+          pointer-events: none;
+          transform: translateY(-8px);
+        }
+
+        .nav-right.visible {
+          opacity: 1;
+          pointer-events: auto;
+          transform: translateY(0);
+        }
+
+        .nav-copy {
+          font-size: 12px;
+          color: rgba(255, 255, 255, 0.28);
+          letter-spacing: 0.03em;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+          .nav-right {
+            display: none !important;
+          }
+          .nav-inner {
+            grid-template-columns: auto 1fr;
+            padding: 0 16px;
+          }
+        }
+
+        @media (max-width: 640px) {
+          .nav-inner {
+            padding: 0 10px;
+          }
+          .nav-links {
+            justify-content: space-around;
+            width: 100%;
+            gap: 1px;
+          }
+          .nav-links a {
+            padding: 5px 9px;
+            font-size: 11px;
+          }
+        }
+      `}</style>
+
+      <nav class="navbar" ref={navbarRef}>
+        {/* Glass base layer */}
+        <div class="navbar-glass"></div>
+
+        {/* Progress fill canvas */}
+        <canvas class="progress-canvas" ref={canvasRef}></canvas>
+
+        {/* UI content */}
+        <div class="nav-inner">
+          <a class={`nav-logo ${activeSection() !== 'home' ? 'visible' : ''}`} href="#home" onClick={() => handleNavClick('home')}>
+            <img src="/Logo.png" alt="Logo" class="logo-img" />
           </a>
 
-          {/* Mobile Menu Button */}
-          <button 
-            class="text-white p-2"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen())}
-            aria-label="Toggle menu"
-          >
-            {isMobileMenuOpen() ? (
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-              </svg>
-            ) : (
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-              </svg>
-            )}
-          </button>
-        </div>
+          <div class="nav-links">
+            <a href="#home" class={activeSection() === 'home' ? 'active' : ''} onClick={() => handleNavClick('home')}>Home</a>
+            <a href="#about" class={activeSection() === 'about' ? 'active' : ''} onClick={() => handleNavClick('about')}>About</a>
+            <a href="#services" class={activeSection() === 'services' ? 'active' : ''} onClick={() => handleNavClick('services')}>Services</a>
+            <a href="#experience" class={activeSection() === 'experience' ? 'active' : ''} onClick={() => handleNavClick('experience')}>Experience</a>
+            <a href="#projects" class={activeSection() === 'projects' ? 'active' : ''} onClick={() => handleNavClick('projects')}>Projects</a>
+          </div>
 
-        {/* Mobile Menu Dropdown */}
-        {isMobileMenuOpen() && (
-          <nav class="mt-3 bg-black rounded-3xl px-4 py-3 shadow-2xl animate-slideUp">
-            <div class="flex flex-col space-y-1">
-              <a 
-                href="#home" 
-                onClick={() => handleNavClick('home')}
-                class={`px-4 py-2 rounded-full text-sm transition-all duration-300 ${
-                  activeSection() === 'home' 
-                    ? 'bg-[#AAEE00] text-black' 
-                    : 'text-white hover:bg-gray-800'
-                }`}
-              >
-                Home
-              </a>
-              <a 
-                href="#about" 
-                onClick={() => handleNavClick('about')}
-                class={`px-4 py-2 rounded-full text-sm transition-all duration-300 ${
-                  activeSection() === 'about' 
-                    ? 'bg-[#AAEE00] text-black' 
-                    : 'text-white hover:bg-gray-800'
-                }`}
-              >
-                About
-              </a>
-              <a 
-                href="#services" 
-                onClick={() => handleNavClick('services')}
-                class={`px-4 py-2 rounded-full text-sm transition-all duration-300 ${
-                  activeSection() === 'services' 
-                    ? 'bg-[#AAEE00] text-black' 
-                    : 'text-white hover:bg-gray-800'
-                }`}
-              >
-                Services
-              </a>
-              <a 
-                href="#experience" 
-                onClick={() => handleNavClick('experience')}
-                class={`px-4 py-2 rounded-full text-sm transition-all duration-300 ${
-                  activeSection() === 'experience' 
-                    ? 'bg-[#AAEE00] text-black' 
-                    : 'text-white hover:bg-gray-800'
-                }`}
-              >
-                Experience
-              </a>
-              <a 
-                href="#projects" 
-                onClick={() => handleNavClick('projects')}
-                class={`px-4 py-2 rounded-full text-sm transition-all duration-300 ${
-                  activeSection() === 'projects' 
-                    ? 'bg-[#AAEE00] text-black' 
-                    : 'text-white hover:bg-gray-800'
-                }`}
-              >
-                Projects
-              </a>
-            </div>
-          </nav>
-        )}
-      </div>
-    </header>
+          <div class={`nav-right ${activeSection() !== 'home' ? 'visible' : ''}`}>
+            <span class="nav-copy">© 2026</span>
+          </div>
+        </div>
+      </nav>
+    </>
   );
 };
 

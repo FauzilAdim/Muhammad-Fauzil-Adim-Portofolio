@@ -25,14 +25,14 @@ const DesignShowcase: Component<DesignShowcaseProps> = (props) => {
           <For each={props.designs.slice(0, 5)}>
             {(design) => (
               <div
-                class="flex-shrink-0 w-[600px] cursor-pointer group"
+                class="flex-shrink-0 w-[280px] sm:w-[450px] md:w-[600px] cursor-pointer group"
                 onClick={() => props.onDesignClick(design.id)}
               >
                 <div class="relative overflow-hidden rounded-3xl bg-gray-100 shadow-lg hover:shadow-2xl transition-all duration-300">
                   <img
                     src={design.cover_image}
                     alt={design.name}
-                    class="w-full h-[500px] object-cover transform group-hover:scale-105 transition-transform duration-500"
+                    class="w-full h-[250px] sm:h-[380px] md:h-[500px] object-cover transform group-hover:scale-105 transition-transform duration-500"
                   />
                   
                   {/* Hover Overlay */}
@@ -54,10 +54,10 @@ const DesignShowcase: Component<DesignShowcaseProps> = (props) => {
           
           {/* See More Button */}
           <Show when={props.designs.length > 5}>
-            <div class="flex-shrink-0 w-[600px] flex items-center justify-center">
+            <div class="flex-shrink-0 w-[280px] sm:w-[450px] md:w-[600px] flex items-center justify-center">
               <button
                 onClick={props.onSeeMoreClick}
-                class="flex flex-col items-center justify-center gap-6 w-full h-[500px] rounded-3xl border-2 border-dashed border-gray-300 hover:border-black transition-all duration-300 group"
+                class="flex flex-col items-center justify-center gap-6 w-full h-[250px] sm:h-[380px] md:h-[500px] rounded-3xl border-2 border-dashed border-gray-300 hover:border-black transition-all duration-300 group"
               >
                 <div class="w-20 h-20 rounded-full bg-black text-white flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                   <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">

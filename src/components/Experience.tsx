@@ -107,8 +107,7 @@ const Experience: Component<SectionProps> = (props) => {
 
   return (
     <section
-      id="experience"
-      class={`py-20 px-4 sm:px-6 lg:px-8 ${props.className || ''}`}
+      class={`pt-32 pb-20 px-4 sm:px-6 lg:px-8 ${props.className || ''}`}
     >
       <div class="max-w-7xl mx-auto">
         <div class="text-center mb-16 animate-fadeIn">
@@ -187,7 +186,7 @@ const Experience: Component<SectionProps> = (props) => {
                       <button
                         type="button"
                         onClick={() => toggleExperience(exp.id)}
-                        class="w-full bg-gradient-to-r from-yellow-200 via-green-100 to-cyan-200 text-black-900 py-2.5 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center gap-2 text-sm shadow-md hover:shadow-lg"
+                        class="w-full bg-gradient-to-r from-yellow-200 via-green-100 to-cyan-200 text-black py-2.5 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center gap-2 text-sm shadow-md hover:shadow-lg"
                       >
                         {selectedExperience() === exp.id ? (
                           <>

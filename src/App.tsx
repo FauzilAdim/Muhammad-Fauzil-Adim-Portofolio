@@ -26,19 +26,19 @@ const App: Component = () => {
     >
       <div class="min-h-screen bg-[#F0F0F0]">
         <Header />
-        <div id="home" style="scroll-margin-top: 80px;">
+        <div id="home">
           <Hero />
         </div>
-        <div id="about" style="scroll-margin-top: 80px;">
+        <div id="about">
           <About />
         </div>
-        <div id="services" style="scroll-margin-top: 80px;">
+        <div id="services">
           <Services />
         </div>
-        <div id="experience" style="scroll-margin-top: 80px;">
+        <div id="experience">
           <Experience />
         </div>
-        <div id="projects" style="scroll-margin-top: 80px;">
+        <div id="projects">
           <Projects />
         </div>
         
