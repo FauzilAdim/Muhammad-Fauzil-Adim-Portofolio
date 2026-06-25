@@ -556,7 +556,7 @@ const Projects: Component = () => {
   return (
     <>
       <section class="pt-32 pb-20">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="site-container">
         {/* HEADER */}
         <div class="text-center mb-16 animate-fadeIn">
           <h2 class="text-4xl md:text-5xl font-bold text-black mb-8">
@@ -638,7 +638,7 @@ const Projects: Component = () => {
       <Show when={!loading()}>
         <>
           {/* TAB HEADERS */}
-          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+          <div class="site-container mb-8">
             <div class="flex items-center gap-8">
               <button
                 onClick={() => setSelectedCategory('design')}
@@ -717,7 +717,7 @@ const Projects: Component = () => {
 
           {/* WEB / MOBILE TAB - GRID */}
           <Show when={selectedCategory() === 'web' || selectedCategory() === 'mobile'}>
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-20">
+            <div class="site-container mb-20">
               <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <For each={allProjects().filter(p => p.category === selectedCategory())}>
                   {(project, index) => (

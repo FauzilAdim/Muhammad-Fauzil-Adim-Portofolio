@@ -56,6 +56,16 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Fluid site container: proportional side margins on laptops, capped on ultra-wide */
+.site-container {
+  width: 100%;
+  max-width: min(92%, 1500px);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: clamp(1rem, 2.5vw, 2rem);
+  padding-right: clamp(1rem, 2.5vw, 2rem);
+}
+
 body {
   margin: 0;
   background: white; /* Ganti gradient dengan white jika mau background putih */

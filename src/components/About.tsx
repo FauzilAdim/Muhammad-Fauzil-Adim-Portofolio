@@ -19,8 +19,8 @@ const About: Component = () => {
   });
 
   return (
-    <section ref={sectionRef} class="pt-32 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
-      <div class="max-w-7xl mx-auto">
+    <section ref={sectionRef} class="pt-32 pb-20 overflow-hidden">
+      <div class="site-container">
         <div class="grid lg:grid-cols-2 gap-16 items-center">
           {/* Content */}
           <div

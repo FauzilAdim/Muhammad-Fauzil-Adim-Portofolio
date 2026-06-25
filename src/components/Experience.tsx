@@ -1,5 +1,14 @@
-import { Component, For, createSignal } from 'solid-js';
-import { Briefcase, MapPin, Calendar, ChevronDown, ChevronUp, CheckCircle, Code } from 'lucide-solid';
+import { Component, For, createSignal, onMount, onCleanup } from 'solid-js';
+import { Dynamic } from 'solid-js/web';
+import {
+  Briefcase,
+  MapPin,
+  Calendar,
+  CheckCircle,
+  Code,
+  Building2,
+  Search,
+} from 'lucide-solid';
 
 type Project = {
   id: string;
@@ -22,7 +31,7 @@ type WorkExperience = {
   responsibilities: string[];
   projects: Project[];
   technologies: string[];
-  companyLogo?: string;
+  icon: Component<{ size?: number | string; class?: string; strokeWidth?: number | string }>;
   companyWebsite?: string;
 };
 
@@ -31,273 +40,419 @@ type SectionProps = {
 };
 
 const Experience: Component<SectionProps> = (props) => {
-  const [selectedExperience, setSelectedExperience] = createSignal<string | null>(null);
+  const [isVisible, setIsVisible] = createSignal(false);
+  const [scrollProgress, setScrollProgress] = createSignal(0);
+  const [translateX, setTranslateX] = createSignal(0);
+  const [isMounted, setIsMounted] = createSignal(false);
+
+  let sectionRef!: HTMLDivElement;
+  let stickyRef!: HTMLDivElement;
+  let trackRef!: HTMLDivElement;
+  let wrapperRef!: HTMLDivElement;
 
   const experiences: WorkExperience[] = [
     {
       id: '1',
       company: 'PT. Smartelco Solusi Teknologi',
       position: 'Junior Developer',
-      location: 'Kantor PT SMARTELCO, Jl. Sida Mukti, Dusun II, Sokaraja Kulon, Kec.Sokaraja',
+      location: 'Sokaraja Kulon, Kec. Sokaraja, Banyumas',
       startDate: '2024-12',
       endDate: '2025-11',
       isCurrentJob: true,
       description: 'Contract • 1 year',
-        responsibilities: [
-    'Develop web applications using Rust, React.js, and Solid.js',
-    'Implement RESTful APIs and integrate databases',
-    'Collaborate with the team in developing new features',
-    'Perform application testing and debugging',
-    'Document code and technical specifications'
-     ],
+      responsibilities: [
+        'Develop web applications using Rust, React.js, and Solid.js',
+        'Implement RESTful APIs and integrate databases',
+        'Collaborate with the team in developing new features',
+        'Perform application testing and debugging',
+        'Document code and technical specifications',
+      ],
       projects: [],
       technologies: ['Rust', 'React.js', 'Solid.js', 'Express.js', 'SurrealDB', 'PostgreSQL'],
-      companyLogo: '🏢',
-      companyWebsite: 'https://smartelco.co.id'
+      icon: Building2,
+      companyWebsite: 'https://smartelco.co.id',
     },
     {
       id: '2',
       company: 'CV. Rumah Mesin',
       position: 'Search Engine Optimization Specialist',
-      location: 'Bantul, Daerah Istimewa Yogyakarta, Indonesia • Di lokasi',
+      location: 'Bantul, Daerah Istimewa Yogyakarta, Indonesia • On-site',
       startDate: '2022-04',
       endDate: '2022-09',
       isCurrentJob: false,
       description: 'Internship • 6 months',
-    responsibilities: [
-    'Implement off-page and on-page SEO strategies',
-    'Create articles optimized for SEO',
-    'Identify websites suitable for article placement'
-    ],
+      responsibilities: [
+        'Implement off-page and on-page SEO strategies',
+        'Create articles optimized for SEO',
+        'Identify websites suitable for article placement',
+      ],
       projects: [],
       technologies: ['SEO', 'Copywriting', 'Content Writing', 'Google Analytics'],
-      companyLogo: '📝',
-      companyWebsite: 'https://rumahmesin.com'
-    }
+      icon: Search,
+      companyWebsite: 'https://rumahmesin.com',
+    },
   ];
 
-//   const formatDate = (dateStr: string): string => {
-//     const [year, month] = dateStr.split('-');
-//     const monthNames = [
-//       'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
-//       'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
-//     ];
-//     return `${monthNames[parseInt(month) - 1]} ${year}`;
-//   };
+  onMount(() => {
+    setIsMounted(true);
+    // Intersection observer for fade-in animation
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.15 }
+    );
+    if (sectionRef) {
+      observer.observe(sectionRef);
+    }
 
-//   const calculateDuration = (startDate: string, endDate: string, isCurrentJob: boolean): string => {
-//     const start = new Date(startDate);
-//     const end = isCurrentJob ? new Date() : new Date(endDate);
-    
-//     const diffTime = Math.abs(end.getTime() - start.getTime());
-//     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-//     const diffMonths = Math.floor(diffDays / 30);
-//     const years = Math.floor(diffMonths / 12);
-//     const months = diffMonths % 12;
-    
-//     if (years > 0) {
-//       return months > 0 ? `${years} thn ${months} bln` : `${years} thn`;
-//     }
-//     return `${months} bln`;
-//   };
+    // Scroll-driven horizontal translation
+    const handleScroll = () => {
+      if (!wrapperRef || !trackRef) return;
 
-  const toggleExperience = (expId: string) => {
-    setSelectedExperience(selectedExperience() === expId ? null : expId);
+      // Skip horizontal scroll on mobile (vertical fallback)
+      if (window.innerWidth < 768) {
+        setTranslateX(0);
+        setScrollProgress(0);
+        return;
+      }
+
+      const rect = wrapperRef.getBoundingClientRect();
+      const wrapperHeight = wrapperRef.offsetHeight;
+      const vh = window.innerHeight;
+
+      // How far the wrapper has scrolled past the top of viewport
+      const scrolledPast = -rect.top;
+      // Total scrollable distance (wrapper height minus one viewport)
+      const scrollDistance = wrapperHeight - vh;
+
+      if (scrollDistance <= 0) {
+        setScrollProgress(0);
+        setTranslateX(0);
+        return;
+      }
+
+      const clamped = Math.max(0, Math.min(scrolledPast, scrollDistance));
+      const progress = clamped / scrollDistance;
+
+      // Total overflow = track width - viewport width
+      const trackWidth = trackRef.scrollWidth;
+      const overflow = trackWidth - window.innerWidth + 80;
+      const maxTranslate = Math.max(0, overflow);
+
+      setScrollProgress(progress);
+      setTranslateX(-progress * maxTranslate);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleScroll, { passive: true });
+
+    // Initial calculation
+    handleScroll();
+
+    onCleanup(() => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+      observer.disconnect();
+    });
+  });
+
+  // Dynamic section height: enough scroll room for all cards to pass
+  const sectionHeight = () => {
+    if (!isMounted()) return 'auto';
+    // Wider cards + more spacing = longer scroll distance for immersive feel
+    const totalCardsWidth = experiences.length * 760 + 500;
+    const scrollRoom = Math.max(totalCardsWidth, 2200);
+    return `${scrollRoom}px`;
   };
 
   return (
-    <section
-      class={`pt-32 pb-20 px-4 sm:px-6 lg:px-8 ${props.className || ''}`}
-    >
-      <div class="max-w-7xl mx-auto">
-        <div class="text-center mb-16 animate-fadeIn">
-          <h2 class="text-4xl md:text-5xl font-bold text-black mb-8">
-            Experiences
-          </h2>
-          <p class="text-black/70 text-lg max-w-3xl mx-auto">
-            My professional journey as a developer encompasses diverse roles in the technology industry, where I have delivered impactful and scalable digital solutions.
-          </p>
-        </div>
+    <>
+      <style>{`
+        /* ====== Horizontal Scroll Experience ====== */
 
-        {/* Experience Timeline */}
-        <div class="relative">
-          {/* Timeline Line */}
-          <div class="absolute left-8 md:left-1/2 transform md:-translate-x-1/2 w-1 bg-gray-600 rounded-full opacity-30" 
-               style={`height: calc(100% - 40px)`}></div>
+        .hscroll-section {
+          position: relative;
+        }
 
-          <div class="space-y-16">
+        .hscroll-sticky {
+          position: sticky;
+          top: 0;
+          height: 100vh;
+          overflow: hidden;
+          display: flex;
+          align-items: center;
+        }
+
+        .hscroll-track {
+          display: flex;
+          gap: 32px;
+          padding: 0 40px;
+          will-change: transform;
+          align-items: flex-start;
+        }
+
+        .hscroll-card {
+          flex-shrink: 0;
+          width: 720px;
+          background: linear-gradient(135deg, rgba(255,255,255,0.10), rgba(255,255,255,0.04)) !important;
+          backdrop-filter: blur(20px) saturate(180%) !important;
+          -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+          border-radius: 24px;
+          padding: 40px;
+          border: 1px solid rgba(255,255,255,0.18) !important;
+          box-shadow:
+            0 8px 32px rgba(0,0,0,0.5),
+            inset 0 1px 0 rgba(255,255,255,0.15) !important;
+          transition: box-shadow 0.4s ease, transform 0.4s ease, border-color 0.4s ease;
+        }
+
+        .hscroll-card:hover {
+          box-shadow:
+            0 16px 48px rgba(0,0,0,0.6),
+            inset 0 1px 0 rgba(255,255,255,0.2) !important;
+          transform: translateY(-4px);
+          border-color: rgba(170,238,0,0.4) !important;
+        }
+
+        /* Horizontal scroll wrapper */
+        .hscroll-wrapper {
+          position: relative;
+        }
+
+        /* Stats card at the end */
+        .hscroll-stats {
+          flex-shrink: 0;
+          width: 400px;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+
+        .hscroll-stat-card {
+          background: linear-gradient(135deg, rgba(255,255,255,0.10), rgba(255,255,255,0.04)) !important;
+          backdrop-filter: blur(20px) saturate(180%) !important;
+          -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+          border-radius: 20px;
+          padding: 24px;
+          border: 1px solid rgba(255,255,255,0.18) !important;
+          box-shadow:
+            0 6px 24px rgba(0,0,0,0.4),
+            inset 0 1px 0 rgba(255,255,255,0.15) !important;
+          display: flex;
+          align-items: center;
+          gap: 16px;
+        }
+
+        .hscroll-stat-icon {
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          background: #AAEE00;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+
+        /* Mobile fallback */
+        @media (max-width: 767px) {
+          .hscroll-section {
+            height: auto !important;
+          }
+
+          .hscroll-sticky {
+            position: relative;
+            height: auto;
+            min-height: auto;
+            padding: 20px 0;
+          }
+
+          .hscroll-track {
+            flex-direction: column;
+            padding: 0 16px;
+            transform: none !important;
+          }
+
+          .hscroll-card {
+            width: 100%;
+          }
+
+          /* Stack two-column layout vertically on mobile */
+          .hscroll-card-inner {
+            flex-direction: column !important;
+          }
+
+          .hscroll-card-inner > .w-px {
+            width: 100% !important;
+            height: 1px !important;
+          }
+
+          .hscroll-header {
+            display: none;
+          }
+
+          .hscroll-wrapper {
+            height: auto !important;
+          }
+
+          .hscroll-stats {
+            width: 100%;
+            padding: 0 16px;
+          }
+
+          .hscroll-progress-bar,
+          .hscroll-hint {
+            display: none;
+          }
+        }
+      `}</style>
+
+      <section
+        ref={sectionRef}
+        class={`hscroll-section ${props.className || ''}`}
+        style={{ background: '#000000' }}
+      >
+        {/* Horizontal Scroll Area */}
+        <div
+          ref={wrapperRef}
+          class="hscroll-wrapper"
+          style={{ height: sectionHeight() }}
+        >
+        <div
+          ref={stickyRef}
+          class={`hscroll-sticky transition-opacity duration-700 ${
+            isVisible() ? 'opacity-100' : 'opacity-0'
+          }`}
+        >
+          <div
+            ref={trackRef}
+            class="hscroll-track"
+            style={{ transform: `translateX(${translateX()}px)` }}
+          >
+            {/* Experience Cards */}
             <For each={experiences}>
-              {(exp, index) => (
-                <div class={`relative flex flex-col md:flex-row items-start md:items-center gap-8 ${
-                  index() % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'
-                }`}>
-                  {/* Timeline Dot */}
-                  <div class="absolute left-8 md:left-1/2 transform md:-translate-x-1/2 -translate-y-2 w-5 h-5 bg-gray-600 rounded-full border-4 border-white shadow-lg z-10 animate-pulse"></div>
-                  
-                  {/* Content with slide animation */}
-                  <div class={`flex-1 ml-16 md:ml-0 ${
-                    index() % 2 === 0 
-                      ? 'md:animate-slideFromLeft animate-slideUp' 
-                      : 'md:animate-slideFromRight animate-slideUp'
-                  }`} style={`animation-delay: ${index() * 0.2}s; animation-fill-mode: both;`}>
-                    <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:scale-105 transition-all duration-500 relative border">
-                      {/* Current Job Badge */}
-                      {exp.isCurrentJob && (
-                        <div class="absolute -top-3 -right-3">
-                          <span class="bg-blue-500 text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg animate-pulse">
-                            ✨ Current Position
-                          </span>
-                        </div>
-                      )}
+              {(exp) => (
+                <div class="hscroll-card relative">
+                  {/* Current Job Badge */}
+                  {exp.isCurrentJob && (
+                    <div class="absolute -top-3 right-6">
+                      <span class="inline-flex items-center gap-2 bg-[#AAEE00] text-black text-xs font-semibold px-4 py-2 rounded-full shadow-md">
+                        <span class="w-1.5 h-1.5 rounded-full bg-black"></span>
+                        Current Position
+                      </span>
+                    </div>
+                  )}
 
+                  {/* Two-column layout: Left = Info + Skills, Right = Responsibilities */}
+                  <div class="hscroll-card-inner flex gap-8">
+                    {/* Left Column */}
+                    <div class="flex-1 min-w-0">
                       {/* Header */}
-                      <div class="flex items-start gap-4 mb-4">
-                        <div class="text-5xl flex-shrink-0">{exp.companyLogo}</div>
-                        <div class="flex-1">
-                          <h3 class="text-xl font-bold text-black mb-1">{exp.position}</h3>
-                          <div class="text-gray-700 font-medium mb-1">{exp.company}</div>
-                          <div class="text-sm text-gray-600 mb-2">{exp.description}</div>
-                          <div class="flex items-center gap-2 text-sm text-gray-600 mb-2">
+                      <div class="flex items-start gap-4 mb-6">
+                        <div class="w-14 h-14 rounded-xl bg-[#AAEE00] flex items-center justify-center flex-shrink-0">
+                          <Dynamic component={exp.icon} size={26} class="text-black" strokeWidth={1.75} />
+                        </div>
+                        <div class="flex-1 min-w-0">
+                          <h3 class="text-xl font-bold text-white mb-1">{exp.position}</h3>
+                          <div class="text-gray-200 font-medium">{exp.company}</div>
+                          <div class="text-sm text-gray-300 mt-1">{exp.description}</div>
+                          <div class="flex items-center gap-2 text-sm text-gray-300 mt-2">
                             <MapPin size={14} class="flex-shrink-0" />
                             <span class="line-clamp-1">{exp.location}</span>
                           </div>
                         </div>
                       </div>
 
-                      {/* Technologies/Skills */}
-                      <div class="mb-4">
-                        <h4 class="text-sm font-semibold text-black mb-2 flex items-center gap-2">
+                      {/* Technologies / Skills */}
+                      <div>
+                        <h4 class="text-sm font-semibold text-white mb-3 flex items-center gap-2">
                           <Code size={16} />
-                          Skills:
+                          Skills
                         </h4>
                         <div class="flex flex-wrap gap-2">
                           <For each={exp.technologies}>
                             {(tech) => (
-                              <span class="text-sm text-gray-700">
+                              <span class="px-3 py-1 bg-white/10 text-white text-xs font-semibold rounded-full border border-white/10">
                                 {tech}
-                                {exp.technologies.indexOf(tech) < exp.technologies.length - 1 && ' · '}
                               </span>
                             )}
                           </For>
                         </div>
                       </div>
+                    </div>
 
-                      {/* Toggle Details Button */}
-                      <button
-                        type="button"
-                        onClick={() => toggleExperience(exp.id)}
-                        class="w-full bg-gradient-to-r from-yellow-200 via-green-100 to-cyan-200 text-black py-2.5 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center gap-2 text-sm shadow-md hover:shadow-lg"
-                      >
-                        {selectedExperience() === exp.id ? (
-                          <>
-                            <ChevronUp size={18} />
-                            Show Less
-                          </>
-                        ) : (
-                          <>
-                            <ChevronDown size={18} />
-                            Show More
-                          </>
-                        )}
-                      </button>
+                    {/* Divider */}
+                    <div class="w-px bg-white/10 flex-shrink-0"></div>
 
-                      {/* Detailed Information (Collapsible) */}
-                      {selectedExperience() === exp.id && (
-                        <div class="mt-6 pt-6 border-t border-gray-200 space-y-6 animate-slideUp">
-                          {/* Responsibilities */}
-                          <div>
-                            <h4 class="text-base font-semibold mb-3 text-black flex items-center gap-2">
-                              <Briefcase size={18} />
-                              Key Responsibilities
-                            </h4>
-                            <ul class="space-y-2">
-                              <For each={exp.responsibilities}>
-                                {(responsibility) => (
-                                  <li class="flex items-start gap-3 text-gray-700 text-sm">
-                                    <CheckCircle size={16} class="text-blue-500 mt-0.5 flex-shrink-0" />
-                                    <span>{responsibility}</span>
-                                  </li>
-                                )}
-                              </For>
-                            </ul>
-                          </div>
-                        </div>
-                      )}
+                    {/* Right Column — Key Responsibilities */}
+                    <div class="flex-1 min-w-0">
+                      <h4 class="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+                        <Briefcase size={16} />
+                        Key Responsibilities
+                      </h4>
+                      <ul class="space-y-3">
+                        <For each={exp.responsibilities}>
+                          {(responsibility) => (
+                            <li class="flex items-start gap-3 text-gray-200 text-sm">
+                              <CheckCircle
+                                size={16}
+                                class="mt-0.5 flex-shrink-0 text-[#AAEE00]"
+                              />
+                              <span>{responsibility}</span>
+                            </li>
+                          )}
+                        </For>
+                      </ul>
                     </div>
                   </div>
-
-                  {/* Empty space for timeline balance */}
-                  <div class="flex-1 hidden md:block"></div>
                 </div>
               )}
             </For>
+
+            {/* Stats Panel at the end */}
+            <div class="hscroll-stats">
+              <div class="hscroll-stat-card">
+                <div class="hscroll-stat-icon">
+                  <Briefcase size={24} strokeWidth={1.75} class="text-black" />
+                </div>
+                <div>
+                  <h3 class="text-white font-bold text-2xl">{experiences.length}</h3>
+                  <p class="text-gray-400 font-medium text-sm">Companies</p>
+                </div>
+              </div>
+
+              <div class="hscroll-stat-card">
+                <div class="hscroll-stat-icon">
+                  <Calendar size={24} strokeWidth={1.75} class="text-black" />
+                </div>
+                <div>
+                  <h3 class="text-white font-bold text-2xl">2+</h3>
+                  <p class="text-gray-400 font-medium text-sm">Years of Experience</p>
+                </div>
+              </div>
+
+              <div class="hscroll-stat-card">
+                <div class="hscroll-stat-icon">
+                  <Code size={24} strokeWidth={1.75} class="text-black" />
+                </div>
+                <div>
+                  <h3 class="text-white font-bold text-2xl">
+                    {[...new Set(experiences.flatMap((exp) => exp.technologies))].length}
+                  </h3>
+                  <p class="text-gray-400 font-medium text-sm">Technologies Mastered</p>
+                </div>
+              </div>
+            </div>
           </div>
+
         </div>
-
-        {/* Experience Summary */}
-        <div class="mt-20 pt-12 border-t border-gray-200 animate-slideUp">
-          <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
-            <div class="bg-gradient-to-br from-orange-200 via-amber-100 to-yellow-200 p-6 rounded-xl text-center transform hover:scale-105 transition-all duration-300 hover:shadow-xl">
-              <div class="flex justify-center mb-3">
-                <Briefcase size={42} strokeWidth={1.5} class="text-black" />
-              </div>
-              <h2 class="text-black font-bold text-2xl">{experiences.length}</h2>
-              <h3 class="text-gray-600 font-semibold text-sm mt-4">Companies</h3>
-            </div>
-            
-            <div class="bg-gradient-to-br from-cyan-200 via-sky-100 to-blue-200 p-6 rounded-xl text-center transform hover:scale-105 transition-all duration-300 hover:shadow-xl">
-              <div class="flex justify-center mb-3">
-                <Calendar size={42} strokeWidth={1.5} class="text-black" />
-              </div>
-              <h4 class="text-black font-bold text-2xl">2+</h4>
-              <h3 class="text-gray-600 font-semibold text-sm mt-4">Years of Experience</h3>
-            </div>
-            
-            <div class="bg-gradient-to-br from-emerald-200 via-green-100 to-teal-200 p-6 rounded-xl text-center transform hover:scale-105 transition-all duration-300 hover:shadow-xl col-span-2 md:col-span-1">
-              <div class="flex justify-center mb-3">
-                <Code size={42} strokeWidth={1.5} class="text-black" />
-              </div>
-              <h4 class="text-black font-bold text-2xl">
-                {[...new Set(experiences.flatMap(exp => exp.technologies))].length}
-              </h4>
-              <h3 class="text-gray-600 font-semibold text-sm mt-4">Technologies Mastered</h3>
-            </div>
-          </div>
         </div>
-      </div>
-
-      <style>{`
-        @keyframes slideFromLeft {
-          from {
-            opacity: 0;
-            transform: translateX(-100px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-
-        @keyframes slideFromRight {
-          from {
-            opacity: 0;
-            transform: translateX(100px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-
-        .animate-slideFromLeft {
-          animation: slideFromLeft 0.8s ease-out;
-        }
-
-        .animate-slideFromRight {
-          animation: slideFromRight 0.8s ease-out;
-        }
-      `}</style>
-    </section>
+      </section>
+    </>
   );
 };
 

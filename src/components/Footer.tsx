@@ -5,8 +5,8 @@ const Footer: Component = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer class="py-16 px-4 sm:px-6 lg:px-8 border-t border-gray-300">
-      <div class="max-w-7xl mx-auto">
+    <footer class="py-16 border-t border-gray-300">
+      <div class="site-container">
         <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-8 sm:gap-12 mb-8 sm:mb-12">
           {/* About Section */}
           <div class="animate-slideUp">

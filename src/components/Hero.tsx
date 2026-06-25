@@ -71,7 +71,7 @@ const Hero: Component = () => {
         }
       `}</style>
 
-      <section class="relative pt-40 pb-24 px-4 sm:px-6 lg:px-8 overflow-hidden">
+      <section class="relative min-h-[100svh] flex flex-col justify-center pt-32 pb-16 overflow-hidden">
         {/* Video Background Container */}
         <div class="absolute inset-0 w-full h-full overflow-hidden z-0 pointer-events-none">
           <video
@@ -86,7 +86,7 @@ const Hero: Component = () => {
           <div class="absolute inset-0 bg-gradient-to-b from-black/35 via-black/20 to-[black]"></div>
         </div>
 
-        <div class="max-w-7xl mx-auto relative z-10 w-full">
+        <div class="site-container relative z-10 w-full">
           <div class="text-center">
             {/* Main Title */}
             <h1 class="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-medium mb-8 animate-fadeIn mt-8 sm:mt-10 px-4">

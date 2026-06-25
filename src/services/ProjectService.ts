@@ -214,7 +214,7 @@ export class ProjectService {
             cacheControl: '3600',
             upsert: false
           })
-          .then(({ data, error }) => {
+          .then(({ error }) => {
             if (error) throw error;
             const { data: urlData } = supabase.storage
               .from('portfolio-images')
